@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Profumotify v5</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23C0392B' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle'%3E🌹%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0f0f1a;--bg2:#1a1a2e;--bg3:#16213e;--accent:#C0392B;--accent2:#E74C3C;--text:#eee;--text2:#aaa;--gold:#f1c40f;--green:#27ae60;--blue:#3498db;--success:#2ecc71;--warn:#f39c12}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#0f0f1a 50%,#16213e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+#loginScreen.hidden{opacity:0;pointer-events:none}
+.login-logo{font-size:64px;margin-bottom:10px;animation:pulse 2s infinite}
+.login-title{font-size:28px;font-weight:700;margin-bottom:5px;background:linear-gradient(90deg,#C0392B,#E74C3C);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-sub{color:var(--text2);margin-bottom:30px;font-size:14px}
+.login-box{width:90%;max-width:320px;background:var(--bg2);border-radius:16px;padding:24px;border:1px solid #2a2a4a}
+.login-box input{width:100%;padding:14px 16px;margin-bottom:12px;border-radius:12px;border:1px solid #333;background:var(--bg);color:var(--text);font-size:15px;outline:none;transition:border .2s}
+.login-box input:focus{border-color:var(--accent)}
+.login-box button{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.login-box button:active{transform:scale(.97)}
+.login-box .hint{color:var(--text2);font-size:11px;text-align:center;margin-top:10px}
+
+/* HEADER */
+.app-header{position:sticky;top:0;z-index:100;background:linear-gradient(180deg,var(--bg2),rgba(26,26,46,.95));backdrop-filter:blur(20px);padding:12px 16px;border-bottom:1px solid #2a2a4a}
+.header-top{display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header-title span{font-size:24px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.header-btn{width:36px;height:36px;border-radius:10px;background:var(--bg3);border:1px solid #2a2a4a;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);transition:background .2s}
+.header-btn:active{background:var(--accent)}
+
+/* METEO */
+.meteo-bar{background:linear-gradient(135deg,var(--bg3),#1a1a2e);margin:12px 16px;padding:14px 18px;border-radius:16px;border:1px solid #2a2a4a;display:flex;align-items:center;justify-content:space-between}
+.meteo-left{display:flex;align-items:center;gap:12px}
+.meteo-icon{font-size:36px}
+.meteo-info{display:flex;flex-direction:column}
+.meteo-temp{font-size:26px;font-weight:700}
+.meteo-city{font-size:12px;color:var(--text2)}
+.meteo-right{text-align:right}
+.meteo-cond{font-size:13px;color:var(--text2)}
+.meteo-advice{font-size:11px;color:var(--gold);margin-top:4px;max-width:180px}
+
+/* SEARCH & FILTERS */
+.search-wrap{padding:0 16px 10px}
+.search-box{position:relative}
+.search-box input{width:100%;padding:12px 16px 12px 42px;border-radius:14px;border:1px solid #2a2a4a;background:var(--bg3);color:var(--text);font-size:15px;outline:none}
+.search-box::before{content:"🔍";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+.filter-chips{display:flex;gap:8px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.filter-chips::-webkit-scrollbar{display:none}
+.chip{padding:6px 14px;border-radius:20px;border:1px solid #2a2a4a;background:var(--bg3);color:var(--text2);font-size:12px;white-space:nowrap;cursor:pointer;transition:all .2s}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px 100px}
+@media(min-width:500px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){.grid{grid-template-columns:repeat(4,1fr);max-width:900px;margin:0 auto}}
+
+.card{background:var(--bg2);border-radius:16px;overflow:hidden;border:1px solid #2a2a4a;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative}
+.card:active{transform:scale(.97)}
+.card-img{height:140px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-img .placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,#1a1a2e,#16213e)}
+.card-img .brand-badge{position:absolute;top:8px;left:8px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;color:#fff;background:rgba(0,0,0,.6);backdrop-filter:blur(10px)}
+.card-img .type-badge{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:20px;font-size:9px;font-weight:600;color:#fff;background:rgba(0,0,0,.6)}
+.card-body{padding:10px 12px 12px}
+.card-name{font-size:13px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
+.card-brand{font-size:11px;color:var(--text2);margin-top:4px}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.card-price{font-size:14px;font-weight:700;color:var(--gold)}
+.card-rating{display:flex;align-items:center;gap:2px;font-size:11px}
+.card-rating .star{color:var(--gold)}
+.card-season{font-size:10px;padding:3px 8px;border-radius:10px;background:var(--bg3);color:var(--text2)}
+
+/* SORT BAR */
+.sort-bar{display:flex;align-items:center;gap:8px;padding:6px 16px 10px;overflow-x:auto;scrollbar-width:none}
+.sort-bar::-webkit-scrollbar{display:none}
+.sort-btn{padding:5px 12px;border-radius:20px;border:1px solid #2a2a4a;background:var(--bg3);color:var(--text2);font-size:11px;white-space:nowrap;cursor:pointer;transition:all .2s}
+.sort-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg,var(--bg2),rgba(26,26,46,.95));backdrop-filter:blur(20px);border-top:1px solid #2a2a4a;display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,6px);z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer;color:var(--text2);font-size:10px;transition:color .2s;border:none;background:none}
+.nav-item.active{color:var(--accent)}
+.nav-item .nav-icon{font-size:22px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal-content{background:var(--bg2);width:100%;max-width:500px;max-height:90vh;border-radius:24px 24px 0 0;overflow-y:auto;transform:translateY(100%);transition:transform .3s;position:relative}
+.modal-overlay.active .modal-content{transform:translateY(0)}
+.modal-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.5);border:none;color:#fff;font-size:20px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
+.modal-img{height:220px;display:flex;align-items:center;justify-content:center;position:relative}
+.modal-img img{width:100%;height:100%;object-fit:cover}
+.modal-img .placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px;background:linear-gradient(135deg,#1a1a2e,#16213e)}
+.modal-body{padding:20px}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.modal-title{font-size:20px;font-weight:700;line-height:1.2}
+.modal-brand{font-size:13px;color:var(--text2);margin-top:4px}
+.modal-rating{display:flex;align-items:center;gap:6px;font-size:14px}
+.modal-price-box{background:var(--bg3);border-radius:12px;padding:12px 16px;margin:16px 0;display:flex;justify-content:space-between;align-items:center}
+.modal-price-label{font-size:11px;color:var(--text2)}
+.modal-price-value{font-size:18px;font-weight:700;color:var(--gold)}
+.modal-price-diff{font-size:12px;padding:3px 8px;border-radius:8px}
+.modal-price-diff.up{background:rgba(231,76,60,.2);color:#e74c3c}
+.modal-price-diff.down{background:rgba(46,204,113,.2);color:#2ecc71}
+.modal-price-diff.same{background:rgba(149,165,166,.2);color:#95a5a6}
+
+/* NOTE OLFATTIVE VALUTATE */
+.notes-section{margin:16px 0}
+.notes-title{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.note-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;background:var(--bg3);border-radius:12px}
+.note-label{font-size:11px;font-weight:600;min-width:50px;text-transform:uppercase;letter-spacing:.5px}
+.note-label.testa{color:#f39c12}
+.note-label.cuore{color:#e74c3c}
+.note-label.fondo{color:#9b59b6}
+.note-tags{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.note-tag{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.08);color:var(--text)}
+
+/* NOTE VALUTATE CON CELLE COLORATE */
+.note-val-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:8px 12px;background:var(--bg3);border-radius:10px}
+.note-val-name{font-size:12px;flex:1;min-width:80px}
+.note-val-cells{display:flex;gap:3px;flex:2}
+.note-val-cell{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.note-val-score{font-size:13px;font-weight:700;min-width:30px;text-align:right}
+
+/* META GRID */
+.meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:16px 0}
+.meta-item{background:var(--bg3);padding:10px 12px;border-radius:12px;text-align:center}
+.meta-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.meta-value{font-size:14px;font-weight:600;margin-top:2px}
+
+/* ACTION BUTTONS */
+.action-btns{display:flex;gap:8px;margin:16px 0}
+.action-btn{flex:1;padding:12px;border-radius:12px;border:none;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .2s}
+.action-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.action-btn.secondary{background:var(--bg3);color:var(--text);border:1px solid #2a2a4a}
+.action-btn:active{opacity:.8}
+.action-btn.danger{background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.3)}
+
+/* SECTIONS */
+.section{padding:0 16px 100px;max-width:900px;margin:0 auto}
+.section-title{font-size:20px;font-weight:700;margin:16px 0 12px;display:flex;align-items:center;gap:8px}
+.section-sub{color:var(--text2);font-size:13px;margin-bottom:16px}
+
+/* WISHLIST */
+.wl-card{background:var(--bg2);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #2a2a4a;display:flex;gap:12px;align-items:center}
+.wl-img{width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;background:var(--bg3)}
+.wl-info{flex:1;min-width:0}
+.wl-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-brand{font-size:12px;color:var(--text2);margin-top:2px}
+.wl-price-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.wl-target{font-size:12px;color:var(--green);font-weight:600}
+.wl-current{font-size:11px;color:var(--text2);text-decoration:line-through}
+.wl-priority{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.wl-priority.p1{background:rgba(231,76,60,.2);color:#e74c3c}
+.wl-priority.p2{background:rgba(243,156,18,.2);color:#f39c12}
+.wl-priority.p3{background:rgba(52,152,219,.2);color:#3498db}
+.wl-alert{font-size:11px;color:var(--green);margin-top:4px}
+
+/* DASHBOARD */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--bg2);border-radius:16px;padding:16px;border:1px solid #2a2a4a;text-align:center}
+.stat-value{font-size:28px;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:11px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.chart-container{background:var(--bg2);border-radius:16px;padding:16px;border:1px solid #2a2a4a;margin-bottom:12px}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:12px}
+.chart-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.chart-label{width:80px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-track{flex:1;height:24px;background:var(--bg3);border-radius:12px;overflow:hidden;position:relative}
+.chart-fill{height:100%;border-radius:12px;transition:width .5s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.chart-fill span{font-size:10px;font-weight:600;color:#fff}
+.advisor-card{background:linear-gradient(135deg,var(--bg3),#1a1a2e);border-radius:16px;padding:16px;border:1px solid #2a2a4a;margin-bottom:12px}
+.advisor-title{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--gold)}
+.advisor-text{font-size:13px;line-height:1.5}
+.advisor-list{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.advisor-list::-webkit-scrollbar{display:none}
+.advisor-chip{padding:8px 14px;border-radius:20px;background:var(--bg);border:1px solid #2a2a4a;font-size:12px;white-space:nowrap}
+
+/* GAME */
+.game-area{background:var(--bg2);border-radius:20px;padding:20px;text-align:center;border:1px solid #2a2a4a;margin-bottom:16px}
+.game-vs{font-size:32px;font-weight:700;color:var(--accent);margin:16px 0}
+.game-cards{display:flex;gap:12px;justify-content:center;margin:16px 0}
+.game-card{flex:1;max-width:160px;background:var(--bg3);border-radius:16px;padding:16px;cursor:pointer;transition:transform .2s,border .2s;border:2px solid transparent}
+.game-card:hover{border-color:var(--accent)}
+.game-card:active{transform:scale(.95)}
+.game-card-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:10px;background:var(--bg);border-radius:12px}
+.game-card-name{font-size:13px;font-weight:600}
+.game-card-brand{font-size:11px;color:var(--text2)}
+.game-progress{background:var(--bg3);border-radius:12px;padding:10px 16px;margin-top:16px}
+.game-progress-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.game-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .3s}
+.game-winner{font-size:48px;margin:20px 0;animation:bounce 1s infinite}
+
+/* PROFILE */
+.profile-header{text-align:center;padding:24px 16px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border-radius:0 0 24px 24px;margin-bottom:16px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px;border:3px solid var(--bg2)}
+.profile-name{font-size:20px;font-weight:700}
+.profile-bio{font-size:13px;color:var(--text2);margin-top:4px}
+.profile-stats{display:flex;justify-content:center;gap:24px;margin-top:16px}
+.profile-stat{text-align:center}
+.profile-stat-value{font-size:22px;font-weight:700}
+.profile-stat-label{font-size:11px;color:var(--text2)}
+.profile-section{background:var(--bg2);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #2a2a4a}
+.profile-section-title{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.profile-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2a2a4a}
+.profile-row:last-child{border-bottom:none}
+.profile-row-label{font-size:13px;color:var(--text2)}
+.profile-row-value{font-size:13px;font-weight:600}
+.toggle-switch{width:44px;height:24px;background:var(--bg3);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;border:1px solid #2a2a4a}
+.toggle-switch.on{background:var(--accent)}
+.toggle-switch::after{content:"";position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:1px;left:1px;transition:transform .2s}
+.toggle-switch.on::after{transform:translateX(20px)}
+
+/* CHAT */
+.chat-container{background:var(--bg2);border-radius:16px;border:1px solid #2a2a4a;height:400px;display:flex;flex-direction:column;overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{max-width:80%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.4}
+.chat-msg.in{background:var(--bg3);border-bottom-left-radius:4px;align-self:flex-start}
+.chat-msg.out{background:linear-gradient(135deg,var(--accent),var(--accent2));align-self:flex-end;border-bottom-right-radius:4px}
+.chat-input-wrap{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #2a2a4a;background:var(--bg3)}
+.chat-input-wrap input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid #2a2a4a;background:var(--bg);color:var(--text);font-size:13px;outline:none}
+.chat-input-wrap button{padding:10px 16px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer}
+
+/* DISCOVERY */
+.discovery-tabs{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.discovery-tabs::-webkit-scrollbar{display:none}
+.disc-tab{padding:8px 16px;border-radius:20px;border:1px solid #2a2a4a;background:var(--bg3);color:var(--text2);font-size:13px;white-space:nowrap;cursor:pointer;transition:all .2s}
+.disc-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.discovery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px 100px}
+
+/* SCANNER */
+.scanner-area{border:2px dashed #2a2a4a;border-radius:20px;padding:40px 20px;text-align:center;background:var(--bg2);margin:16px}
+.scanner-area.dragover{border-color:var(--accent);background:rgba(192,57,43,.1)}
+.scanner-icon{font-size:48px;margin-bottom:12px}
+.scanner-text{font-size:14px;color:var(--text2);margin-bottom:16px}
+.scanner-btn{padding:12px 24px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.scanner-preview{max-width:100%;border-radius:12px;margin-top:16px;display:none}
+.scanner-result{background:var(--bg3);border-radius:12px;padding:16px;margin-top:16px;text-align:left;display:none}
+
+/* RESET MODAL */
+.reset-warning{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:12px;padding:16px;margin:16px 0;text-align:center}
+.reset-warning .icon{font-size:32px;margin-bottom:8px}
+.reset-warning p{font-size:13px;color:#e74c3c;line-height:1.5}
+
+/* UPDATE PRICES MODAL */
+.update-modal{background:var(--bg3);border-radius:16px;padding:20px;margin:16px 0;text-align:center}
+.update-modal .icon{font-size:40px;margin-bottom:12px}
+.update-modal p{font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.5}
+.update-progress{width:100%;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin:12px 0}
+.update-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s}
+
+/* NOTE OLFATTIVE TAB */
+.note-olf-grid{display:grid;grid-template-columns:repeat(1,1fr);gap:12px;padding:0 16px 100px}
+.note-olf-card{background:var(--bg2);border-radius:16px;padding:16px;border:1px solid #2a2a4a;margin-bottom:12px}
+.note-olf-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.note-olf-img{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--bg3)}
+.note-olf-info{flex:1}
+.note-olf-name{font-size:15px;font-weight:600}
+.note-olf-brand{font-size:12px;color:var(--text2)}
+.note-olf-famiglia{font-size:11px;padding:2px 8px;border-radius:8px;background:var(--bg3);color:var(--text2);display:inline-block;margin-top:4px}
+.note-olf-section{margin-top:12px}
+.note-olf-section-title{font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.note-olf-section-title.testa{color:#f39c12}
+.note-olf-section-title.cuore{color:#e74c3c}
+.note-olf-section-title.fondo{color:#9b59b6}
+.note-olf-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:6px 10px;background:var(--bg3);border-radius:8px}
+.note-olf-note-name{font-size:12px;flex:1}
+.note-olf-bar{flex:2;height:20px;background:var(--bg);border-radius:10px;overflow:hidden;position:relative}
+.note-olf-bar-fill{height:100%;border-radius:10px;transition:width .5s}
+.note-olf-score{font-size:12px;font-weight:700;min-width:24px;text-align:right}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg2);color:var(--text);padding:12px 20px;border-radius:12px;border:1px solid #2a2a4a;font-size:13px;z-index:300;opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ANIMATIONS */
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.fade-in{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* HIDE */
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+<div class="login-logo">🌹</div>
+<div class="login-title">Profumotify</div>
+<div class="login-sub">La tua collezione, il tuo stile</div>
+<div class="login-box">
+<input type="text" id="loginUser" placeholder="Username" value="giancarlo">
+<input type="password" id="loginPass" placeholder="Password" value="">
+<button onclick="doLogin()">Entra</button>
+<div class="hint">Username: giancarlo | Password: Profumo2026!</div>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<!-- HEADER -->
+<header class="app-header">
+<div class="header-top">
+<div class="header-title"><span>🌹</span>Profumotify</div>
+<div class="header-actions">
+<button class="header-btn" onclick="toggleTheme()" title="Tema">☀️</button>
+<button class="header-btn" onclick="exportCSV()" title="Esporta">📊</button>
+<button class="header-btn" onclick="showProfile()" title="Profilo">👤</button>
+<button class="header-btn" onclick="doLogout()" title="Logout" style="color:#e74c3c">🚪</button>
+</div>
+</div>
+</header>
+
+<!-- METEO -->
+<div class="meteo-bar" id="meteoBar">
+<div class="meteo-left">
+<div class="meteo-icon" id="meteoIcon">🌤️</div>
+<div class="meteo-info">
+<div class="meteo-temp" id="meteoTemp">--°C</div>
+<div class="meteo-city" id="meteoCity">Bari</div>
+</div>
+</div>
+<div class="meteo-right">
+<div class="meteo-cond" id="meteoCond">Caricamento...</div>
+<div class="meteo-advice" id="meteoAdvice">Attendi il meteo...</div>
+</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="mainContent">
+
+<!-- COLLEZIONE -->
+<div id="tab-collezione" class="tab-content">
+<div class="search-wrap">
+<div class="search-box"><input type="text" id="searchInput" placeholder="Cerca profumo, brand, nota..." oninput="filterProfumi()"></div>
+</div>
+<div class="filter-chips" id="filterChips">
+<div class="chip active" onclick="setFilter('tutti')">Tutti</div>
+<div class="chip" onclick="setFilter('arabo')">Arabi</div>
+<div class="chip" onclick="setFilter('designer')">Designer</div>
+<div class="chip" onclick="setFilter('estate')">Estate</div>
+<div class="chip" onclick="setFilter('inverno')">Inverno</div>
+<div class="chip" onclick="setFilter('giorno')">Giorno</div>
+<div class="chip" onclick="setFilter('sera')">Sera</div>
+<div class="chip" onclick="setFilter('formale')">Formale</div>
+</div>
+<div class="sort-bar" id="sortBar">
+<div class="sort-btn active" onclick="setSort('nome')">Nome</div>
+<div class="sort-btn" onclick="setSort('prezzo')">Prezzo</div>
+<div class="sort-btn" onclick="setSort('rating')">Rating</div>
+<div class="sort-btn" onclick="setSort('data')">Data</div>
+<div class="sort-btn" onclick="setSort('brand')">Brand</div>
+</div>
+<div class="grid" id="profumiGrid"></div>
+</div>
+
+<!-- NOTE OLFATTIVE -->
+<div id="tab-note-olfattive" class="tab-content hidden">
+<div class="section">
+<div class="section-title">🌸 Note Olfattive Dettagliate</div>
+<div class="section-sub">Valutazione intensità 0-10 per ogni nota</div>
+<div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding:0 16px">
+<div class="chip active" onclick="setNoteFilter('tutti')">Tutti</div>
+<div class="chip" onclick="setNoteFilter('testa')">Testa</div>
+<div class="chip" onclick="setNoteFilter('cuore')">Cuore</div>
+<div class="chip" onclick="setNoteFilter('fondo')">Fondo</div>
+</div>
+<div id="noteOlfattiveContainer"></div>
+</div>
+</div>
+
+<!-- WISHLIST -->
+<div id="tab-wishlist" class="tab-content hidden">
+<div class="section">
+<div class="section-title">💎 Wishlist</div>
+<div class="section-sub" id="wlSubtitle">8 profumi in lista</div>
+<div style="display:flex;gap:8px;margin-bottom:16px">
+<button class="action-btn secondary" onclick="checkPricesManual()" style="flex:1">🔄 Aggiorna prezzi</button>
+<button class="action-btn secondary" onclick="showAddWishlist()" style="flex:1">➕ Aggiungi</button>
+</div>
+<div id="wishlistContainer"></div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="tab-dashboard" class="tab-content hidden">
+<div class="section">
+<div class="section-title">📊 Dashboard</div>
+<div class="stat-grid" id="statGrid"></div>
+<div class="advisor-card">
+<div class="advisor-title">🌡️ Consiglio del giorno</div>
+<div class="advisor-text" id="advisorText">Caricamento consiglio...</div>
+<div class="advisor-list" id="advisorList"></div>
+</div>
+<div class="chart-container">
+<div class="chart-title">🏷️ Distribuzione Brand</div>
+<div id="brandChart"></div>
+</div>
+<div class="chart-container">
+<div class="chart-title">🌸 Famiglie Olfattive</div>
+<div id="familyChart"></div>
+</div>
+<div class="chart-container">
+<div class="chart-title">🌞 Distribuzione Stagioni</div>
+<div id="seasonChart"></div>
+</div>
+</div>
+</div>
+
+<!-- SFIDA -->
+<div id="tab-sfida" class="tab-content hidden">
+<div class="section">
+<div class="section-title">🏆 Sfida Profumi</div>
+<div class="section-sub">Scegli il tuo preferito tra due profumi</div>
+<div class="game-area" id="gameArea">
+<div id="gameRound">Round 1 di 6</div>
+<div class="game-vs">VS</div>
+<div class="game-cards" id="gameCards"></div>
+<div class="game-progress">
+<div>Progresso torneo</div>
+<div class="game-progress-bar"><div class="game-progress-fill" id="gameProgress" style="width:0%"></div></div>
+</div>
+</div>
+<div id="gameWinner" class="hidden">
+<div class="game-winner">🏆</div>
+<div style="text-align:center">
+<div style="font-size:20px;font-weight:700" id="winnerName"></div>
+<div style="font-size:13px;color:var(--text2);margin-top:4px" id="winnerBrand"></div>
+</div>
+<button class="action-btn primary" onclick="restartGame()" style="margin-top:20px;width:100%">🔄 Nuova sfida</button>
+</div>
+</div>
+</div>
+
+<!-- DISCOVERY -->
+<div id="tab-discovery" class="tab-content hidden">
+<div class="section">
+<div class="section-title">🔍 Discovery</div>
+<div class="discovery-tabs">
+<div class="disc-tab active" onclick="setDiscovery('arabi')">Arabi</div>
+<div class="disc-tab" onclick="setDiscovery('designer')">Designer</div>
+<div class="disc-tab" onclick="setDiscovery('nicchia')">Nicchia</div>
+<div class="disc-tab" onclick="setDiscovery('brand')">Brand</div>
+<div class="disc-tab" onclick="setDiscovery('nuovi')">Novità</div>
+</div>
+<div id="discoveryContent"></div>
+</div>
+</div>
+
+<!-- PROFILO -->
+<div id="tab-profilo" class="tab-content hidden">
+<div class="section">
+<div class="profile-header">
+<div class="profile-avatar" id="profileAvatar">👤</div>
+<div class="profile-name" id="profileName">Giancarlo</div>
+<div class="profile-bio" id="profileBio">Collezionista di profumi | Bari</div>
+<div class="profile-stats">
+<div class="profile-stat"><div class="profile-stat-value" id="profStatCount">49</div><div class="profile-stat-label">Profumi</div></div>
+<div class="profile-stat"><div class="profile-stat-value" id="profStatBrands">24</div><div class="profile-stat-label">Brand</div></div>
+<div class="profile-stat"><div class="profile-stat-value" id="profStatValue">€1.2k</div><div class="profile-stat-label">Valore</div></div>
+</div>
+</div>
+<div class="profile-section">
+<div class="profile-section-title">⚙️ Impostazioni</div>
+<div class="profile-row"><span class="profile-row-label">Notifiche push</span><div class="toggle-switch on" id="toggleNotif" onclick="toggleSetting('notif')"></div></div>
+<div class="profile-row"><span class="profile-row-label">GPS meteo</span><div class="toggle-switch on" id="toggleGPS" onclick="toggleSetting('gps')"></div></div>
+<div class="profile-row"><span class="profile-row-label">Tema scuro</span><div class="toggle-switch on" id="toggleDark" onclick="toggleSetting('dark')"></div></div>
+<div class="profile-row"><span class="profile-row-label">Alert prezzi 12h</span><div class="toggle-switch on" id="toggleAlert" onclick="toggleSetting('alert')"></div></div>
+</div>
+<div class="profile-section">
+<div class="profile-section-title">🔗 Social</div>
+<div class="profile-row"><span class="profile-row-label">Instagram</span><span class="profile-row-value" style="color:var(--text2)">Aggiungi...</span></div>
+<div class="profile-row"><span class="profile-row-label">TikTok</span><span class="profile-row-value" style="color:var(--text2)">Aggiungi...</span></div>
+<div class="profile-row"><span class="profile-row-label">Telegram</span><span class="profile-row-value" style="color:var(--text2)">Aggiungi...</span></div>
+</div>
+<div class="profile-section">
+<div class="profile-section-title">💰 Aggiornamento Prezzi</div>
+<div class="profile-row"><span class="profile-row-label">Ultimo aggiornamento</span><span class="profile-row-value" id="lastUpdatePrice" style="color:var(--text2)">Mai</span></div>
+<button class="action-btn primary" onclick="showUpdatePricesModal()" style="width:100%;margin-top:10px">🔄 Aggiorna tutti i prezzi da Notino</button>
+</div>
+<div class="profile-section">
+<div class="profile-section-title">🗑️ Zona Pericolo</div>
+<button class="action-btn danger" onclick="showResetModal()" style="width:100%">⚠️ Resetta collezione</button>
+<button class="action-btn secondary" onclick="doLogout()" style="width:100%;margin-top:8px">🚪 Logout</button>
+</div>
+</div>
+</div>
+
+<!-- CHAT -->
+<div id="tab-chat" class="tab-content hidden">
+<div class="section">
+<div class="section-title">💬 Chat</div>
+<div class="chat-container">
+<div class="chat-messages" id="chatMessages">
+<div class="chat-msg in">Ciao Giancarlo! 👋 Sono il tuo assistente Profumotify. Come posso aiutarti oggi?</div>
+</div>
+<div class="chat-input-wrap">
+<input type="text" id="chatInput" placeholder="Scrivi un messaggio..." onkeypress="if(event.key==='Enter')sendChat()">
+<button onclick="sendChat()">Invia</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SCANNER -->
+<div id="tab-scanner" class="tab-content hidden">
+<div class="section">
+<div class="section-title">📸 Scanner</div>
+<div class="section-sub">Carica uno screenshot da Notino o Fragrantica</div>
+<div class="scanner-area" id="scannerArea" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+<div class="scanner-icon">📷</div>
+<div class="scanner-text">Trascina un'immagine qui<br>oppure clicca per selezionare</div>
+<input type="file" id="scannerFile" accept="image/*" style="display:none" onchange="handleFile(this)">
+<button class="scanner-btn" onclick="document.getElementById('scannerFile').click()">Seleziona foto</button>
+<img class="scanner-preview" id="scannerPreview">
+<div class="scanner-result" id="scannerResult"></div>
+</div>
+</div>
+</div>
+
+</div><!-- mainContent -->
+
+<!-- MODAL DETTAGLIO -->
+<div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
+<div class="modal-content" onclick="event.stopPropagation()">
+<button class="modal-close" onclick="closeDetailModal()">×</button>
+<div class="modal-img" id="modalImg"><div class="placeholder" id="modalPlaceholder">🌹</div></div>
+<div class="modal-body">
+<div class="modal-header">
+<div>
+<div class="modal-title" id="modalTitle"></div>
+<div class="modal-brand" id="modalBrand"></div>
+</div>
+<div class="modal-rating" id="modalRating"></div>
+</div>
+<div class="modal-price-box">
+<div>
+<div class="modal-price-label">Prezzo attuale</div>
+<div class="modal-price-value" id="modalPrice"></div>
+</div>
+<div style="text-align:right">
+<div class="modal-price-label">Acquistato a</div>
+<div style="font-size:14px" id="modalBuyPrice"></div>
+<div class="modal-price-diff" id="modalDiff"></div>
+</div>
+</div>
+<div class="notes-section">
+<div class="notes-title">🌸 Note Olfattive</div>
+<div class="note-row"><span class="note-label testa">Testa</span><div class="note-tags" id="noteTesta"></div></div>
+<div class="note-row"><span class="note-label cuore">Cuore</span><div class="note-tags" id="noteCuore"></div></div>
+<div class="note-row"><span class="note-label fondo">Fondo</span><div class="note-tags" id="noteFondo"></div></div>
+</div>
+<div id="noteValutateSection" style="margin:16px 0">
+<div class="notes-title">📊 Intensità Note (0-10)</div>
+<div id="noteValutateContent"></div>
+</div>
+<div class="meta-grid" id="modalMeta"></div>
+<div class="action-btns">
+<button class="action-btn primary" onclick="openLink()">🛒 Apri link</button>
+<button class="action-btn secondary" onclick="shareProfumo()">📤 Condividi</button>
+</div>
+<div style="margin-top:12px">
+<div style="font-size:12px;color:var(--text2);margin-bottom:6px">📝 Note personali</div>
+<textarea id="notePersonale" style="width:100%;padding:10px;border-radius:10px;border:1px solid #2a2a4a;background:var(--bg3);color:var(--text);font-size:13px;min-height:60px;resize:vertical;outline:none;font-family:inherit" placeholder="Aggiungi le tue note..." onblur="saveNote()"></textarea>
+</div>
+</div>
+</div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="resetModal" onclick="closeModal(event)">
+<div class="modal-content" style="max-height:60vh;border-radius:24px" onclick="event.stopPropagation()">
+<div class="modal-body">
+<div class="reset-warning">
+<div class="icon">⚠️</div>
+<p><strong>Attenzione!</strong><br>Stai per cancellare TUTTA la tua collezione di 49 profumi. Questa azione è irreversibile.</p>
+</div>
+<div style="margin:16px 0">
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Inserisci la password per confermare:</div>
+<input type="password" id="resetPassword" style="width:100%;padding:12px 16px;border-radius:12px;border:1px solid #e74c3c;background:var(--bg);color:var(--text);font-size:15px;outline:none" placeholder="Password">
+</div>
+<div style="display:flex;gap:8px">
+<button class="action-btn secondary" onclick="closeResetModal()" style="flex:1">Annulla</button>
+<button class="action-btn primary" onclick="confirmReset()" style="flex:1;background:#e74c3c">Conferma reset</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- UPDATE PRICES MODAL -->
+<div class="modal-overlay" id="updatePricesModal" onclick="closeModal(event)">
+<div class="modal-content" style="max-height:70vh;border-radius:24px" onclick="event.stopPropagation()">
+<div class="modal-body">
+<div class="update-modal">
+<div class="icon">🔄</div>
+<p><strong>Aggiornamento Prezzi</strong><br>Il sistema controllerà i prezzi attuali su Notino per tutti i profumi della tua collezione e wishlist.</p>
+<div id="updateProgressArea">
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Progresso: <span id="updateProgressText">0/49 profumi</span></div>
+<div class="update-progress"><div class="update-progress-fill" id="updateProgressBar" style="width:0%"></div></div>
+</div>
+<div id="updateResults" style="display:none;margin-top:16px;text-align:left">
+<div style="font-size:14px;font-weight:600;margin-bottom:8px">📊 Risultati:</div>
+<div id="updateResultsContent" style="font-size:12px;line-height:1.8"></div>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin-top:16px">
+<button class="action-btn secondary" onclick="closeUpdatePricesModal()" style="flex:1">Chiudi</button>
+<button class="action-btn primary" onclick="startPriceUpdate()" id="btnStartUpdate" style="flex:1">🚀 Avvia aggiornamento</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+<button class="nav-item active" onclick="switchTab('collezione')">
+<span class="nav-icon">🌹</span>
+<span>Collezione</span>
+</button>
+<button class="nav-item" onclick="switchTab('note-olfattive')">
+<span class="nav-icon">🌸</span>
+<span>Note</span>
+</button>
+<button class="nav-item" onclick="switchTab('wishlist')">
+<span class="nav-icon">💎</span>
+<span>Wishlist</span>
+</button>
+<button class="nav-item" onclick="switchTab('dashboard')">
+<span class="nav-icon">📊</span>
+<span>Stats</span>
+</button>
+<button class="nav-item" onclick="switchTab('sfida')">
+<span class="nav-icon">🏆</span>
+<span>Sfida</span>
+</button>
+<button class="nav-item" onclick="switchTab('scanner')">
+<span class="nav-icon">📸</span>
+<span>Scan</span>
+</button>
+</nav>
+
+</div><!-- app -->
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
