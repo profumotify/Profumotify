@@ -1,81 +1,872 @@
 // ============================================================
-// PROFUMOTIFY v5 - APP.JS COMPLETO
-// Logout, Aggiorna Prezzi, Note Olfattive Valutate 0-10
+// PROFUMOTIFY v6 - Collezione Completa di Giancarlo (Bari)
+// Fix: immagini, link Notino, rimozione wishlist, meteo CORS, prezzi
 // ============================================================
 
-const BRAND_COLORS={"Lattafa":"#C0392B","Armaf":"#8E44AD","Al Haramain":"#27AE60","Khadlaj":"#D35400","Anfar":"#2980B9","Zimaya":"#16A085","LPDO":"#2C3E50","Adyan":"#E74C3C","Ard Al Zaafaran":"#9B59B6","Asdaaf":"#1ABC9C","Davidoff":"#3498DB","John Varvatos":"#F39C12","Montblanc":"#2C3E50","Bentley":"#34495E","Salvatore Ferragamo":"#E67E22","Paco Rabanne":"#C0392B","Versace":"#F1C40F","Azzaro":"#E74C3C","Zara":"#607D8B","Calvin Klein":"#95A5A6","G. Bellini":"#7F8C8D","Hamidi":"#E91E63","Al Wataniah":"#FF9800","Afnan":"#00BCD4"};
-const PROFUMI=[{"id": "PF001", "nome": "Davidoff Cool Water", "brand": "Davidoff", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 25, "prezzo_attuale": 28, "rating": 4.0, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Acquatico", "note_testa": "Menta, Lavanda, Coriandolo, Rosmarino", "note_cuore": "Gelsomino, Geranio, Neroli", "note_fondo": "Muschio, Cedro, Ambra", "note_valutate": {"testa": {"Menta": 9, "Lavanda": 7, "Coriandolo": 5, "Rosmarino": 6}, "cuore": {"Gelsomino": 6, "Geranio": 5, "Neroli": 7}, "fondo": {"Muschio": 8, "Cedro": 6, "Ambra": 4}}, "link": "https://www.notino.it/davidoff/cool-water-eau-de-toilette-per-uomo/", "data_acquisto": "2024-03-15"}, {"id": "PF002", "nome": "Davidoff Cool Water Intense", "brand": "Davidoff", "tipo": "Designer", "concentrazione": "EDP", "prezzo_acquisto": 32, "prezzo_attuale": 35, "rating": 4.2, "stagione": "Estate", "occasione": "Giorno", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Acquatico", "note_testa": "Mandorla verde", "note_cuore": "Fiore d'arancio", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Mandorla verde": 8}, "cuore": {"Fiore d'arancio": 7}, "fondo": {"Muschio": 7, "Legno di sandalo": 6}}, "link": "https://www.notino.it/davidoff/cool-water-intense-eau-de-parfum-per-uomo/", "data_acquisto": "2024-04-10"}, {"id": "PF003", "nome": "John Varvatos Artisan Pure", "brand": "John Varvatos", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 45, "prezzo_attuale": 48, "rating": 4.3, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Agrumato", "note_testa": "Cedro, Mandarino, Bergamotto, Timo", "note_cuore": "Gelsomino, Ginger", "note_fondo": "Muschio, Legno di cedro, Ambra", "note_valutate": {"testa": {"Cedro": 8, "Mandarino": 7, "Bergamotto": 9, "Timo": 5}, "cuore": {"Gelsomino": 6, "Ginger": 5}, "fondo": {"Muschio": 6, "Legno di cedro": 7, "Ambra": 5}}, "link": "https://www.notino.it/john-varvatos/artisan-pure-eau-de-toilette-per-uomo/", "data_acquisto": "2024-02-20"}, {"id": "PF004", "nome": "Montblanc Individuel", "brand": "Montblanc", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 30, "prezzo_attuale": 32, "rating": 3.8, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Moderata", "famiglia": "Orientale", "note_testa": "Bergamotto, Menta, Lavanda, Ananas", "note_cuore": "Gelsomino, Muschio di quercia", "note_fondo": "Vaniglia, Muschio, Cacao", "note_valutate": {"testa": {"Bergamotto": 7, "Menta": 5, "Lavanda": 6, "Ananas": 4}, "cuore": {"Gelsomino": 5, "Muschio di quercia": 6}, "fondo": {"Vaniglia": 7, "Muschio": 6, "Cacao": 5}}, "link": "https://www.notino.it/montblanc/individuel-eau-de-toilette-per-uomo/", "data_acquisto": "2024-01-15"}, {"id": "PF005", "nome": "Bentley Momentum Intense", "brand": "Bentley", "tipo": "Designer", "concentrazione": "EDP", "prezzo_acquisto": 35, "prezzo_attuale": 38, "rating": 4.1, "stagione": "Inverno", "occasione": "Formale", "longevita": "Ottima", "proiezione": "Buona", "famiglia": "Legnoso", "note_testa": "Bergamotto, Lavanda", "note_cuore": "Geranio, Elemi, Ambra", "note_fondo": "Muschio, Legno di sandalo, Vaniglia", "note_valutate": {"testa": {"Bergamotto": 6, "Lavanda": 5}, "cuore": {"Geranio": 5, "Elemi": 6, "Ambra": 7}, "fondo": {"Muschio": 6, "Legno di sandalo": 7, "Vaniglia": 5}}, "link": "https://www.notino.it/bentley/momentum-intense-eau-de-parfum-per-uomo/", "data_acquisto": "2024-05-01"}, {"id": "PF006", "nome": "Salvatore Ferragamo Uomo Urban Feel", "brand": "Salvatore Ferragamo", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 40, "prezzo_attuale": 42, "rating": 3.9, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Aromatico", "note_testa": "Salvia, Bergamotto, Caffè", "note_cuore": "Cedro, Ambra", "note_fondo": "Vetiver, Muschio, Incenso", "note_valutate": {"testa": {"Salvia": 6, "Bergamotto": 7, "Caffè": 5}, "cuore": {"Cedro": 6, "Ambra": 5}, "fondo": {"Vetiver": 6, "Muschio": 5, "Incenso": 4}}, "link": "https://www.notino.it/salvatore-ferragamo/uomo-urban-feel-eau-de-toilette-per-uomo/", "data_acquisto": "2024-03-22"}, {"id": "PF007", "nome": "Paco Rabanne One Million Lucky", "brand": "Paco Rabanne", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 55, "prezzo_attuale": 58, "rating": 4.0, "stagione": "Autunno", "occasione": "Sera", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Dolce", "note_testa": "Mirtillo rosso, Frutta secca", "note_cuore": "Miele, Gelsomino, Rosa", "note_fondo": "Legno di cedro, Muschio, Ambra", "note_valutate": {"testa": {"Mirtillo rosso": 7, "Frutta secca": 6}, "cuore": {"Miele": 8, "Gelsomino": 6, "Rosa": 5}, "fondo": {"Legno di cedro": 6, "Muschio": 5, "Ambra": 6}}, "link": "https://www.notino.it/paco-rabanne/1-million-lucky-eau-de-toilette-per-uomo/", "data_acquisto": "2024-02-10"}, {"id": "PF008", "nome": "Versace Eros", "brand": "Versace", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 45, "prezzo_attuale": 48, "rating": 4.2, "stagione": "Autunno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Menta, Mela verde, Limone", "note_cuore": "Tonka, Ambroxan, Geranio", "note_fondo": "Vaniglia, Legno di cedro, Muschio", "note_valutate": {"testa": {"Menta": 9, "Mela verde": 8, "Limone": 7}, "cuore": {"Tonka": 7, "Ambroxan": 8, "Geranio": 5}, "fondo": {"Vaniglia": 7, "Legno di cedro": 6, "Muschio": 7}}, "link": "https://www.notino.it/versace/eros-eau-de-toilette-per-uomo/", "data_acquisto": "2024-01-20"}, {"id": "PF009", "nome": "Azzaro Wanted By Night", "brand": "Azzaro", "tipo": "Designer", "concentrazione": "EDP", "prezzo_acquisto": 50, "prezzo_attuale": 52, "rating": 4.3, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Speziato", "note_testa": "Mandarino, Zenzero, Cannella", "note_cuore": "Incenso, Cuoio, Cedro", "note_fondo": "Tabacco, Cipresso, Vaniglia", "note_valutate": {"testa": {"Mandarino": 6, "Zenzero": 7, "Cannella": 8}, "cuore": {"Incenso": 8, "Cuoio": 7, "Cedro": 6}, "fondo": {"Tabacco": 8, "Cipresso": 6, "Vaniglia": 5}}, "link": "https://www.notino.it/azzaro/wanted-by-night-eau-de-parfum-per-uomo/", "data_acquisto": "2024-04-05"}, {"id": "PF010", "nome": "Lattafa Rouat Al Oud", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 18, "prezzo_attuale": 20, "rating": 4.1, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Cannella", "note_cuore": "Oud, Rosa", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Cannella": 7}, "cuore": {"Oud": 9, "Rosa": 6}, "fondo": {"Ambra": 8, "Muschio": 6, "Vaniglia": 7}}, "link": "https://www.notino.it/lattafa/rouat-al-oud-eau-de-parfum-unisex/", "data_acquisto": "2024-06-01"}, {"id": "PF011", "nome": "Lattafa Confidential Platinum", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 20, "prezzo_attuale": 22, "rating": 4.0, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Bergamotto, Pepe", "note_cuore": "Oud, Rosa, Gelsomino", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Bergamotto": 7, "Pepe": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Gelsomino": 5}, "fondo": {"Muschio": 6, "Legno di sandalo": 7}}, "link": "https://www.notino.it/lattafa/confidential-platinum-eau-de-parfum-unisex/", "data_acquisto": "2024-06-10"}, {"id": "PF012", "nome": "Lattafa Maahir Black Edition", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 22, "prezzo_attuale": 24, "rating": 4.2, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Pepe nero, Bergamotto", "note_cuore": "Oud, Rosa, Patchouli", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Pepe nero": 7, "Bergamotto": 6}, "cuore": {"Oud": 9, "Rosa": 6, "Patchouli": 7}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/lattafa/maahir-black-edition-eau-de-parfum-per-uomo/", "data_acquisto": "2024-07-01"}, {"id": "PF013", "nome": "Lattafa Hayaatim", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 15, "prezzo_attuale": 17, "rating": 3.8, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Buona", "proiezione": "Moderata", "famiglia": "Floreale", "note_testa": "Bergamotto, Limone", "note_cuore": "Rosa, Gelsomino", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Limone": 6}, "cuore": {"Rosa": 7, "Gelsomino": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/lattafa/hayaatim-eau-de-parfum-unisex/", "data_acquisto": "2024-07-15"}, {"id": "PF014", "nome": "Lattafa Oud Mood Reminiscence", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 19, "prezzo_attuale": 21, "rating": 4.0, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Cardamomo", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Cardamomo": 7}, "cuore": {"Oud": 9, "Rosa": 6, "Incenso": 8}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/lattafa/oud-mood-reminiscence-eau-de-parfum-unisex/", "data_acquisto": "2024-08-01"}, {"id": "PF015", "nome": "Lattafa Opulent Oud", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 17, "prezzo_attuale": 19, "rating": 3.9, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Pepe, Bergamotto", "note_cuore": "Oud, Rosa, Gelsomino", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Pepe": 6, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Gelsomino": 5}, "fondo": {"Muschio": 6, "Legno di sandalo": 7}}, "link": "https://www.notino.it/lattafa/opulent-oud-eau-de-parfum-unisex/", "data_acquisto": "2024-08-10"}, {"id": "PF016", "nome": "Adyan Dalia Rouge Extrait", "brand": "Adyan", "tipo": "Arabo", "concentrazione": "Extrait", "prezzo_acquisto": 25, "prezzo_attuale": 28, "rating": 4.1, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Rosa", "note_cuore": "Oud, Patchouli", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Rosa": 7}, "cuore": {"Oud": 9, "Patchouli": 7}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/adyan/dalia-rouge-extrait-de-parfum-unisex/", "data_acquisto": "2024-08-20"}, {"id": "PF017", "nome": "Lattafa Ajwad", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 16, "prezzo_attuale": 18, "rating": 3.9, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Buona", "proiezione": "Moderata", "famiglia": "Floreale", "note_testa": "Bergamotto, Frutta", "note_cuore": "Rosa, Gelsomino, Lillà", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Frutta": 5}, "cuore": {"Rosa": 7, "Gelsomino": 6, "Lillà": 5}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/lattafa/ajwad-eau-de-parfum-unisex/", "data_acquisto": "2024-09-01"}, {"id": "PF018", "nome": "Armaf Club de Nuit Sillage", "brand": "Armaf", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 28, "prezzo_attuale": 30, "rating": 4.3, "stagione": "Primavera", "occasione": "Formale", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Floreale", "note_testa": "Bergamotto, Limone, Miele", "note_cuore": "Rosa, Gelsomino, Lillà", "note_fondo": "Muschio, Ambra, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 8, "Limone": 7, "Miele": 6}, "cuore": {"Rosa": 7, "Gelsomino": 6, "Lillà": 5}, "fondo": {"Muschio": 6, "Ambra": 6, "Legno di cedro": 5}}, "link": "https://www.notino.it/armaf/club-de-nuit-sillage-eau-de-parfum-unisex/", "data_acquisto": "2024-09-10"}, {"id": "PF019", "nome": "Armaf Q Intense", "brand": "Armaf", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 22, "prezzo_attuale": 24, "rating": 4.0, "stagione": "Autunno", "occasione": "Sera", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Zafferano, Bergamotto", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Muschio, Ambra, Vaniglia", "note_valutate": {"testa": {"Zafferano": 7, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Incenso": 7}, "fondo": {"Muschio": 6, "Ambra": 7, "Vaniglia": 6}}, "link": "https://www.notino.it/armaf/q-intense-eau-de-parfum-per-uomo/", "data_acquisto": "2024-09-15"}, {"id": "PF020", "nome": "Lattafa Ramz Silver", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 15, "prezzo_attuale": 17, "rating": 3.8, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Agrumato", "note_testa": "Limone, Bergamotto, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Limone": 8, "Bergamotto": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/lattafa/ramz-silver-eau-de-parfum-per-uomo/", "data_acquisto": "2024-09-20"}, {"id": "PF021", "nome": "Armaf Black Saffron", "brand": "Armaf", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 20, "prezzo_attuale": 22, "rating": 3.9, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Speziato", "note_testa": "Zafferano, Bergamotto", "note_cuore": "Rosa, Patchouli", "note_fondo": "Ambra, Muschio, Legno di sandalo", "note_valutate": {"testa": {"Zafferano": 8, "Bergamotto": 6}, "cuore": {"Rosa": 6, "Patchouli": 7}, "fondo": {"Ambra": 7, "Muschio": 6, "Legno di sandalo": 6}}, "link": "https://www.notino.it/armaf/black-saffron-eau-de-parfum-unisex/", "data_acquisto": "2024-10-01"}, {"id": "PF022", "nome": "Lattafa Mohra", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 18, "prezzo_attuale": 20, "rating": 4.1, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Cardamomo", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Cardamomo": 7}, "cuore": {"Oud": 9, "Rosa": 6, "Incenso": 8}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/lattafa/mohra-eau-de-parfum-unisex/", "data_acquisto": "2024-10-10"}, {"id": "PF023", "nome": "Lattafa Qaed Al Fursan", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 16, "prezzo_attuale": 18, "rating": 4.0, "stagione": "Autunno", "occasione": "Sera", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Speziato", "note_testa": "Pepe, Bergamotto", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Pepe": 6, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Incenso": 7}, "fondo": {"Ambra": 7, "Muschio": 6, "Vaniglia": 6}}, "link": "https://www.notino.it/lattafa/qaed-al-fursan-eau-de-parfum-unisex/", "data_acquisto": "2024-10-15"}, {"id": "PF024", "nome": "Al Haramain Oyuny", "brand": "Al Haramain", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 30, "prezzo_attuale": 32, "rating": 4.2, "stagione": "Inverno", "occasione": "Formale", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Rosa", "note_cuore": "Oud, Patchouli", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Rosa": 7}, "cuore": {"Oud": 9, "Patchouli": 7}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/al-haramain/oyuny-eau-de-parfum-unisex/", "data_acquisto": "2024-10-20"}, {"id": "PF025", "nome": "Khadlaj Jameel", "brand": "Khadlaj", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 20, "prezzo_attuale": 22, "rating": 3.9, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Buona", "proiezione": "Moderata", "famiglia": "Floreale", "note_testa": "Bergamotto, Frutta", "note_cuore": "Rosa, Gelsomino, Lillà", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Frutta": 5}, "cuore": {"Rosa": 7, "Gelsomino": 6, "Lillà": 5}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/khadlaj/jameel-eau-de-parfum-unisex/", "data_acquisto": "2024-11-01"}, {"id": "PF026", "nome": "Khadlaj Aseel Al Oud", "brand": "Khadlaj", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 22, "prezzo_attuale": 24, "rating": 4.0, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Cardamomo", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Cardamomo": 7}, "cuore": {"Oud": 9, "Rosa": 6, "Incenso": 8}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/khadlaj/aseel-al-oud-eau-de-parfum-unisex/", "data_acquisto": "2024-11-05"}, {"id": "PF027", "nome": "Lattafa Teriaq Intense", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 19, "prezzo_attuale": 21, "rating": 4.1, "stagione": "Autunno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Speziato", "note_testa": "Pepe, Bergamotto", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Pepe": 6, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Incenso": 7}, "fondo": {"Ambra": 7, "Muschio": 6, "Vaniglia": 6}}, "link": "https://www.notino.it/lattafa/teriaq-intense-eau-de-parfum-unisex/", "data_acquisto": "2024-11-10"}, {"id": "PF028", "nome": "Al Haramain Tanasuk", "brand": "Al Haramain", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 28, "prezzo_attuale": 30, "rating": 4.0, "stagione": "Primavera", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Floreale", "note_testa": "Bergamotto, Limone", "note_cuore": "Rosa, Gelsomino, Lillà", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Limone": 6}, "cuore": {"Rosa": 7, "Gelsomino": 6, "Lillà": 5}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/al-haramain/tanasuk-eau-de-parfum-unisex/", "data_acquisto": "2024-11-15"}, {"id": "PF029", "nome": "Al Haramain Jameela", "brand": "Al Haramain", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 26, "prezzo_attuale": 28, "rating": 4.1, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Zafferano, Bergamotto", "note_cuore": "Oud, Rosa, Gelsomino", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Zafferano": 7, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Gelsomino": 5}, "fondo": {"Muschio": 6, "Legno di sandalo": 7}}, "link": "https://www.notino.it/al-haramain/jameela-eau-de-parfum-unisex/", "data_acquisto": "2024-11-20"}, {"id": "PF030", "nome": "Ard Al Zaafaran Saher Al Layali", "brand": "Ard Al Zaafaran", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 15, "prezzo_attuale": 17, "rating": 3.8, "stagione": "Inverno", "occasione": "Sera", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Zafferano, Cardamomo", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 7, "Cardamomo": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Incenso": 7}, "fondo": {"Ambra": 7, "Muschio": 6, "Vaniglia": 6}}, "link": "https://www.notino.it/ard-al-zaafaran/saher-al-layali-eau-de-parfum-unisex/", "data_acquisto": "2024-11-25"}, {"id": "PF031", "nome": "Asdaaf Salamah", "brand": "Asdaaf", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 18, "prezzo_attuale": 20, "rating": 3.9, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Floreale", "note_testa": "Bergamotto, Frutta", "note_cuore": "Rosa, Gelsomino", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Frutta": 5}, "cuore": {"Rosa": 7, "Gelsomino": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/asdaaf/salamah-eau-de-parfum-unisex/", "data_acquisto": "2024-12-01"}, {"id": "PF032", "nome": "Lattafa Sheikh Al Shuyukh Supreme", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 21, "prezzo_attuale": 23, "rating": 4.2, "stagione": "Inverno", "occasione": "Formale", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Rosa", "note_cuore": "Oud, Patchouli", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Rosa": 7}, "cuore": {"Oud": 9, "Patchouli": 7}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/lattafa/sheikh-al-shuyukh-supreme-eau-de-parfum-unisex/", "data_acquisto": "2024-12-05"}, {"id": "PF033", "nome": "Lattafa Najdia Intense", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 17, "prezzo_attuale": 19, "rating": 4.0, "stagione": "Estate", "occasione": "Giorno", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Agrumato", "note_testa": "Limone, Bergamotto, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Limone": 8, "Bergamotto": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/lattafa/najdia-intense-eau-de-parfum-per-uomo/", "data_acquisto": "2024-12-10"}, {"id": "PF034", "nome": "Lattafa Petra", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 18, "prezzo_attuale": 20, "rating": 4.1, "stagione": "Autunno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Speziato", "note_testa": "Pepe, Bergamotto", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Pepe": 6, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Incenso": 7}, "fondo": {"Ambra": 7, "Muschio": 6, "Vaniglia": 6}}, "link": "https://www.notino.it/lattafa/petra-eau-de-parfum-unisex/", "data_acquisto": "2024-12-15"}, {"id": "PF035", "nome": "Anfar Badeig Azul", "brand": "Anfar", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 14, "prezzo_attuale": 16, "rating": 3.7, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Acquatico", "note_testa": "Bergamotto, Limone, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Limone": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/anfar/badeig-azul-eau-de-parfum-per-uomo/", "data_acquisto": "2024-12-20"}, {"id": "PF036", "nome": "Anfar Rituals Of Anfar Chef-D'Oeuvre", "brand": "Anfar", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 16, "prezzo_attuale": 18, "rating": 3.9, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Zafferano, Bergamotto", "note_cuore": "Oud, Rosa, Gelsomino", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Zafferano": 7, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Gelsomino": 5}, "fondo": {"Muschio": 6, "Legno di sandalo": 7}}, "link": "https://www.notino.it/anfar/rituals-of-anfar-chef-doeuvre-eau-de-parfum-unisex/", "data_acquisto": "2024-12-22"}, {"id": "PF037", "nome": "Zimaya Impulse Oud", "brand": "Zimaya", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 20, "prezzo_attuale": 22, "rating": 4.0, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Cardamomo", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Cardamomo": 7}, "cuore": {"Oud": 9, "Rosa": 6, "Incenso": 8}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/zimaya/impulse-oud-eau-de-parfum-unisex/", "data_acquisto": "2024-12-25"}, {"id": "PF038", "nome": "LPDO Soul Sea", "brand": "LPDO", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 24, "prezzo_attuale": 26, "rating": 4.1, "stagione": "Estate", "occasione": "Giorno", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Acquatico", "note_testa": "Bergamotto, Limone, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Limone": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/lpdo/soul-sea-eau-de-parfum-per-uomo/", "data_acquisto": "2025-01-05"}, {"id": "PF039", "nome": "LPDO Rubin Fumée", "brand": "LPDO", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 26, "prezzo_attuale": 28, "rating": 4.2, "stagione": "Autunno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Speziato", "note_testa": "Pepe, Bergamotto", "note_cuore": "Oud, Rosa, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Pepe": 6, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Incenso": 7}, "fondo": {"Ambra": 7, "Muschio": 6, "Vaniglia": 6}}, "link": "https://www.notino.it/lpdo/rubin-fumee-eau-de-parfum-per-uomo/", "data_acquisto": "2025-01-10"}, {"id": "PF040", "nome": "LPDO Hash Intense", "brand": "LPDO", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 25, "prezzo_attuale": 27, "rating": 4.3, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Orientale", "note_testa": "Zafferano, Cannabis", "note_cuore": "Oud, Patchouli, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Zafferano": 8, "Cannabis": 7}, "cuore": {"Oud": 9, "Patchouli": 7, "Incenso": 8}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/lpdo/hash-intense-eau-de-parfum-per-uomo/", "data_acquisto": "2025-01-15"}, {"id": "PF041", "nome": "LPDO Desert Doré", "brand": "LPDO", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 23, "prezzo_attuale": 25, "rating": 4.0, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Zafferano, Bergamotto", "note_cuore": "Oud, Rosa, Gelsomino", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Zafferano": 7, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Gelsomino": 5}, "fondo": {"Muschio": 6, "Legno di sandalo": 7}}, "link": "https://www.notino.it/lpdo/desert-dore-eau-de-parfum-per-uomo/", "data_acquisto": "2025-01-20"}, {"id": "PF042", "nome": "LPDO Gotique Island", "brand": "LPDO", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 22, "prezzo_attuale": 24, "rating": 3.9, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Agrumato", "note_testa": "Bergamotto, Limone, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 7, "Limone": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/lpdo/gotique-island-eau-de-parfum-per-uomo/", "data_acquisto": "2025-01-25"}, {"id": "PF043", "nome": "Zara Man Blue Spirit", "brand": "Zara", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 15, "prezzo_attuale": 17, "rating": 3.6, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Acquatico", "note_testa": "Bergamotto, Limone", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Bergamotto": 6, "Limone": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 5}, "fondo": {"Muschio": 5, "Legno di cedro": 5}}, "link": "https://www.zara.com/it/it/zara-man-blue-spirit-p/", "data_acquisto": "2025-02-01"}, {"id": "PF044", "nome": "Calvin Klein CK One Summer (blu)", "brand": "Calvin Klein", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 35, "prezzo_attuale": 38, "rating": 3.8, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Agrumato", "note_testa": "Limone, Bergamotto, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Limone": 8, "Bergamotto": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/calvin-klein/ck-one-summer-eau-de-toilette-unisex/", "data_acquisto": "2025-02-10"}, {"id": "PF045", "nome": "G. Bellini Deep", "brand": "G. Bellini", "tipo": "Designer", "concentrazione": "EDP", "prezzo_acquisto": 12, "prezzo_attuale": 14, "rating": 3.5, "stagione": "Autunno", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Legnoso", "note_testa": "Bergamotto, Lavanda", "note_cuore": "Cedro, Ambra", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Bergamotto": 6, "Lavanda": 5}, "cuore": {"Cedro": 6, "Ambra": 5}, "fondo": {"Muschio": 5, "Legno di sandalo": 6}}, "link": "https://www.notino.it/g-bellini/deep-eau-de-parfum-per-uomo/", "data_acquisto": "2025-02-15"}, {"id": "PF046", "nome": "Lattafa Khamrah Qahwa", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 22, "prezzo_attuale": 24, "rating": 4.3, "stagione": "Inverno", "occasione": "Sera", "longevita": "Ottima", "proiezione": "Forte", "famiglia": "Speziato", "note_testa": "Caffè, Cardamomo", "note_cuore": "Oud, Cannella, Incenso", "note_fondo": "Ambra, Muschio, Vaniglia", "note_valutate": {"testa": {"Caffè": 9, "Cardamomo": 7}, "cuore": {"Oud": 8, "Cannella": 8, "Incenso": 7}, "fondo": {"Ambra": 8, "Muschio": 7, "Vaniglia": 7}}, "link": "https://www.notino.it/lattafa/khamrah-qahwa-eau-de-parfum-unisex/", "data_acquisto": "2025-02-20"}, {"id": "PF047", "nome": "Calvin Klein CK One", "brand": "Calvin Klein", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 30, "prezzo_attuale": 32, "rating": 3.9, "stagione": "Primavera", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Agrumato", "note_testa": "Bergamotto, Limone, Ananas", "note_cuore": "Gelsomino, Muschio di quercia", "note_fondo": "Muschio, Cedro, Ambra", "note_valutate": {"testa": {"Bergamotto": 7, "Limone": 7, "Ananas": 5}, "cuore": {"Gelsomino": 5, "Muschio di quercia": 5}, "fondo": {"Muschio": 6, "Cedro": 5, "Ambra": 5}}, "link": "https://www.notino.it/calvin-klein/ck-one-eau-de-toilette-unisex/", "data_acquisto": "2025-03-01"}, {"id": "PF048", "nome": "Calvin Klein CK One Summer (arancio)", "brand": "Calvin Klein", "tipo": "Designer", "concentrazione": "EDT", "prezzo_acquisto": 35, "prezzo_attuale": 38, "rating": 3.7, "stagione": "Estate", "occasione": "Giorno", "longevita": "Moderata", "proiezione": "Moderata", "famiglia": "Agrumato", "note_testa": "Arancia, Bergamotto, Menta", "note_cuore": "Gelsomino, Lavanda", "note_fondo": "Muschio, Legno di cedro", "note_valutate": {"testa": {"Arancia": 8, "Bergamotto": 7, "Menta": 6}, "cuore": {"Gelsomino": 5, "Lavanda": 6}, "fondo": {"Muschio": 5, "Legno di cedro": 6}}, "link": "https://www.notino.it/calvin-klein/ck-one-summer-eau-de-toilette-unisex/", "data_acquisto": "2025-03-10"}, {"id": "PF049", "nome": "Lattafa Ramz Gold", "brand": "Lattafa", "tipo": "Arabo", "concentrazione": "EDP", "prezzo_acquisto": 16, "prezzo_attuale": 18, "rating": 4.0, "stagione": "Autunno", "occasione": "Formale", "longevita": "Buona", "proiezione": "Buona", "famiglia": "Orientale", "note_testa": "Zafferano, Bergamotto", "note_cuore": "Oud, Rosa, Gelsomino", "note_fondo": "Muschio, Legno di sandalo", "note_valutate": {"testa": {"Zafferano": 7, "Bergamotto": 6}, "cuore": {"Oud": 8, "Rosa": 6, "Gelsomino": 5}, "fondo": {"Muschio": 6, "Legno di sandalo": 7}}, "link": "https://www.notino.it/lattafa/ramz-gold-eau-de-parfum-per-uomo/", "data_acquisto": "2025-03-15"}];
-const WISHLIST=[{"id": "WL001", "nome": "Lattafa His Confession", "brand": "Lattafa", "prezzo_target": 20, "prezzo_attuale": 22, "priorita": 1, "link": "https://www.notino.it/lattafa/his-confession-eau-de-parfum-per-uomo/", "note": "Nuovo rilascio Lattafa 2025"}, {"id": "WL002", "nome": "Hamidi The Lost Paradise Divine Cherry", "brand": "Hamidi", "prezzo_target": 25, "prezzo_attuale": 28, "priorita": 1, "link": "https://www.notino.it/hamidi/the-lost-paradise-divine-cherry-eau-de-parfum-unisex/", "note": "Cherry bomb interessante"}, {"id": "WL003", "nome": "Al Wataniah Thurath", "brand": "Al Wataniah", "prezzo_target": 18, "prezzo_attuale": 20, "priorita": 2, "link": "https://www.notino.it/al-wataniah/thurath-eau-de-parfum-unisex/", "note": "Clone di un classico"}, {"id": "WL004", "nome": "Al Haramain Amber Oud Aqua Dubai", "brand": "Al Haramain", "prezzo_target": 35, "prezzo_attuale": 38, "priorita": 1, "link": "https://www.notino.it/al-haramain/amber-oud-aqua-dubai-eau-de-parfum-unisex/", "note": "Versione acquatica dell'Amber Oud"}, {"id": "WL005", "nome": "Lattafa Khamrah Waha", "brand": "Lattafa", "prezzo_target": 22, "prezzo_attuale": 24, "priorita": 2, "link": "https://www.notino.it/lattafa/khamrah-waha-eau-de-parfum-unisex/", "note": "Variante del Khamrah originale"}, {"id": "WL006", "nome": "Afnan 9pm Rebel", "brand": "Afnan", "prezzo_target": 28, "prezzo_attuale": 32, "priorita": 2, "link": "https://www.notino.it/afnan/9pm-rebel-eau-de-parfum-per-uomo/", "note": "Versione intensa del 9pm"}, {"id": "WL007", "nome": "Afnan Turathi Blue", "brand": "Afnan", "prezzo_target": 24, "prezzo_attuale": 26, "priorita": 3, "link": "https://www.notino.it/afnan/turathi-blue-eau-de-parfum-per-uomo/", "note": "Blue scent versatile"}, {"id": "WL008", "nome": "Lattafa Fakhar Black Men", "brand": "Lattafa", "prezzo_target": 18, "prezzo_attuale": 20, "priorita": 3, "link": "https://www.notino.it/lattafa/fakhar-black-men-eau-de-parfum-per-uomo/", "note": "Dark e misterioso"}];
-const SEASON_ADVICE={"Estate":["Acquatico","Agrumato","Fresca"],"Inverno":["Orientale","Speziato","Legnoso"],"Primavera":["Floreale","Agrumato","Aromatico"],"Autunno":["Orientale","Speziato","Legnoso"]};
-const NOTE_COLORS={0:"#333",1:"#3d3d3d",2:"#4d4d4d",3:"#5c5c5c",4:"#6b6b6b",5:"#7a7a00",6:"#8a8a00",7:"#9a9a00",8:"#c4a000",9:"#daa520",10:"#ffd700"};
+const PERFUMES = [
+  { id: 1, name: "Oud for Glory", brand: "Lattafa", type: "arab", price: 18.5, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.69324.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/oud-for-glory-eau-de-parfum-unisex/",
+    family: "Legnoso Speziato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Zafferano, Noce moscata", heart: "Oud, Agarwood", base: "Muschio, Ambra" },
+    intensity: 9, personal: "Profumo potente e duraturo, ottimo rapporto qualita-prezzo" },
+  { id: 2, name: "Raghba", brand: "Lattafa", type: "arab", price: 15.9, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.31814.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/raghba-eau-de-parfum-unisex/",
+    family: "Dolce Vanigliato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Incenso, Zucchero", heart: "Legno di sandalo, Vaniglia", base: "Muschio, Ambra" },
+    intensity: 8, personal: "Vaniglia dolce e avvolgente, molto apprezzato" },
+  { id: 3, name: "Asad", brand: "Lattafa", type: "arab", price: 19.9, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.72841.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/asad-eau-de-parfum-per-uomo/",
+    family: "Aromatico Fougere", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Ananas, Bergamotto, Mirtillo", heart: "Iris, Gelsomino, Rosa", base: "Muschio, Vaniglia, Amberwood" },
+    intensity: 7, personal: "Clone eccellente di Dior Sauvage Elixir" },
+  { id: 4, name: "Fakhar Black", brand: "Lattafa", type: "arab", price: 16.5, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.64532.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/fakhar-black-eau-de-parfum-per-uomo/",
+    family: "Orientale Speziato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Mele, Bergamotto", heart: "Cannella, Rosa", base: "Muschio, Vaniglia" },
+    intensity: 8, personal: "Oriental dolce, buona proiezione" },
+  { id: 5, name: "Khamrah", brand: "Lattafa", type: "arab", price: 22.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.73651.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/khamrah-eau-de-parfum-unisex/",
+    family: "Dolce Speziato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Cannella, Noce moscata", heart: "Datteri, Pralina, Tuberosa", base: "Vaniglia, Miele, Oud" },
+    intensity: 9, personal: "Capolavoro di Lattafa, dolcezza speziata perfetta" },
+  { id: 6, name: "Ejaazi", brand: "Lattafa", type: "arab", price: 14.9, rating: 7.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.50000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/ejaazi-eau-de-parfum-per-uomo/",
+    family: "Agrumato Aromatico", season: "Estate", occasion: "Giorno",
+    notes: { top: "Limone, Bergamotto", heart: "Lavanda, Geranio", base: "Muschio, Legno di sandalo" },
+    intensity: 6, personal: "Fresco e versatile per l'estate" },
+  { id: 7, name: "Hayaati Florence", brand: "Lattafa", type: "arab", price: 17.5, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.75000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/hayaati-florence-eau-de-parfum-per-donna/",
+    family: "Floreale Fruttato", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Pompelmo, Pera", heart: "Rosa, Gelsomino", base: "Muschio, Ambra" },
+    intensity: 6, personal: "Floreale delicato e femminile" },
+  { id: 8, name: "Opulent Musk", brand: "Lattafa", type: "arab", price: 13.9, rating: 7.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.52000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/opulent-musk-eau-de-parfum-unisex/",
+    family: "Muschiato Floreale", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Rosa, Peonia", heart: "Muschio, Ambra", base: "Muschio bianco, Sandalo" },
+    intensity: 5, personal: "Muschio pulito ed elegante" },
+  { id: 9, name: "Velvet Oud", brand: "Lattafa", type: "arab", price: 16.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.48000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/velvet-oud-eau-de-parfum-unisex/",
+    family: "Legnoso Oud", season: "Autunno", occasion: "Serata",
+    notes: { top: "Zafferano, Cardamomo", heart: "Oud, Gelsomino", base: "Muschio, Vaniglia" },
+    intensity: 8, personal: "Oud accessibile e raffinato" },
+  { id: 10, name: "Ameer Al Oudh", brand: "Lattafa", type: "arab", price: 20.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.55000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/ameer-al-oudh-eau-de-parfum-unisex/",
+    family: "Orientale Oud", season: "Inverno", occasion: "Serata",
+    notes: { top: "Legno di agar, Zafferano", heart: "Oud, Rosa", base: "Vaniglia, Muschio" },
+    intensity: 9, personal: "Oud classico e potente" },
+  { id: 11, name: "Ana Abiyedh", brand: "Lattafa", type: "arab", price: 15.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.53000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/ana-abiyedh-eau-de-parfum-unisex/",
+    family: "Agrumato Muschiato", season: "Estate", occasion: "Giorno",
+    notes: { top: "Bergamotto, Limone", heart: "Muschio, Lavanda", base: "Muschio bianco, Ambra" },
+    intensity: 6, personal: "Fresco e pulito, simile a Silver Mountain Water" },
+  { id: 12, name: "Badee Al Oud", brand: "Lattafa", type: "arab", price: 21.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.68000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/badee-al-oud-eau-de-parfum-unisex/",
+    family: "Orientale Oud", season: "Inverno", occasion: "Serata",
+    notes: { top: "Zafferano, Lavanda", heart: "Oud, Legno di agar", base: "Muschio, Vaniglia" },
+    intensity: 9, personal: "Oud intenso e misterioso" },
+  { id: 13, name: "Fakhar Rose", brand: "Lattafa", type: "arab", price: 16.5, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.65000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/fakhar-rose-eau-de-parfum-per-donna/",
+    family: "Floreale Orientale", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Rosa, Peonia", heart: "Gelsomino, Ylang-ylang", base: "Muschio, Vaniglia" },
+    intensity: 7, personal: "Rosa orientale avvolgente" },
+  { id: 14, name: "Hayaati Gold", brand: "Lattafa", type: "arab", price: 18.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.70000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/hayaati-gold-eau-de-parfum-per-uomo/",
+    family: "Orientale Dolce", season: "Autunno", occasion: "Serata",
+    notes: { top: "Mele, Cannella", heart: "Vaniglia, Caramello", base: "Muschio, Legno di sandalo" },
+    intensity: 8, personal: "Dolcezza orientale equilibrata" },
+  { id: 15, name: "Maahir", brand: "Lattafa", type: "arab", price: 17.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.56000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/maahir-eau-de-parfum-per-uomo/",
+    family: "Aromatico Speziato", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Bergamotto, Lavanda", heart: "Pepe, Cardamomo", base: "Muschio, Legno di cedro" },
+    intensity: 7, personal: "Speziato aromatico versatile" },
+  { id: 16, name: "Musk Salama", brand: "Lattafa", type: "arab", price: 14.5, rating: 7.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.49000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/musk-salama-eau-de-parfum-unisex/",
+    family: "Muschiato Floreale", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Rosa, Gelsomino", heart: "Muschio, Ambra", base: "Muschio bianco, Sandalo" },
+    intensity: 5, personal: "Muschio delicato e raffinato" },
+  { id: 17, name: "Oud Mood", brand: "Lattafa", type: "arab", price: 19.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.58000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/oud-mood-eau-de-parfum-unisex/",
+    family: "Legnoso Oud", season: "Inverno", occasion: "Serata",
+    notes: { top: "Zafferano, Cardamomo", heart: "Oud, Rosa", base: "Muschio, Vaniglia" },
+    intensity: 9, personal: "Oud intenso con note dolci" },
+  { id: 18, name: "Qaaed", brand: "Lattafa", type: "arab", price: 16.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.51000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/qaaed-eau-de-parfum-per-uomo/",
+    family: "Orientale Speziato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Noce moscata, Cannella", heart: "Oud, Legno di agar", base: "Muschio, Ambra" },
+    intensity: 8, personal: "Speziato orientale classico" },
+  { id: 19, name: "Raghba Wood Intense", brand: "Lattafa", type: "arab", price: 18.5, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.62000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/raghba-wood-intense-eau-de-parfum-unisex/",
+    family: "Legnoso Speziato", season: "Autunno", occasion: "Serata",
+    notes: { top: "Incenso, Legno di sandalo", heart: "Oud, Vaniglia", base: "Muschio, Ambra" },
+    intensity: 8, personal: "Versione intensa di Raghba, piu legnosa" },
+  { id: 20, name: "Sheikh Al Shuyukh", brand: "Lattafa", type: "arab", price: 20.5, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.60000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/sheikh-al-shuyukh-eau-de-parfum-per-uomo/",
+    family: "Orientale Legnoso", season: "Inverno", occasion: "Serata",
+    notes: { top: "Zafferano, Rosa", heart: "Oud, Legno di agar", base: "Muschio, Vaniglia" },
+    intensity: 9, personal: "Oud premium, eleganza assoluta" },
+  { id: 21, name: "Taj Al Layl", brand: "Lattafa", type: "arab", price: 15.5, rating: 7.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.54000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/taj-al-layl-eau-de-parfum-unisex/",
+    family: "Floreale Orientale", season: "Primavera", occasion: "Serata",
+    notes: { top: "Rosa, Gelsomino", heart: "Ylang-ylang, Vaniglia", base: "Muschio, Ambra" },
+    intensity: 7, personal: "Floreale orientale romantico" },
+  { id: 22, name: "Yara", brand: "Lattafa", type: "arab", price: 17.5, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.71000.jpg",
+    notinoUrl: "https://www.notino.it/lattafa/yara-eau-de-parfum-per-donna/",
+    family: "Dolce Fruttato", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Mandorla, Caramello", heart: "Vaniglia, Gelsomino", base: "Muschio, Zucchero" },
+    intensity: 7, personal: "Dolcezza fruttata irresistibile" },
+  { id: 23, name: "Amber Oud Gold", brand: "Al Haramain", type: "arab", price: 35.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.45000.jpg",
+    notinoUrl: "https://www.notino.it/al-haramain/amber-oud-gold-eau-de-parfum-unisex/",
+    family: "Orientale Ambrato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Agrumi, Bergamotto", heart: "Ambra, Mela", base: "Muschio, Vaniglia" },
+    intensity: 8, personal: "Clone eccellente di BR540, qualita superiore" },
+  { id: 24, name: "Amber Oud Tobacco", brand: "Al Haramain", type: "arab", price: 38.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.47000.jpg",
+    notinoUrl: "https://www.notino.it/al-haramain/amber-oud-tobacco-eau-de-parfum-unisex/",
+    family: "Tabacco Orientale", season: "Inverno", occasion: "Serata",
+    notes: { top: "Tabacco, Cannella", heart: "Oud, Vaniglia", base: "Muschio, Ambra" },
+    intensity: 9, personal: "Tabacco e oud in combo perfetta, capolavoro" },
+  { id: 25, name: "L'Aventure", brand: "Al Haramain", type: "arab", price: 25.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.30000.jpg",
+    notinoUrl: "https://www.notino.it/al-haramain/laventure-eau-de-parfum-per-uomo/",
+    family: "Chypre Fruttato", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Bergamotto, Limone, Mele", heart: "Gelsomino, Rosa", base: "Muschio, Ambra, Muschio di quercia" },
+    intensity: 7, personal: "Clone di Aventus, ottimo rapporto qualita-prezzo" },
+  { id: 26, name: "L'Aventure Blanche", brand: "Al Haramain", type: "arab", price: 24.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.35000.jpg",
+    notinoUrl: "https://www.notino.it/al-haramain/laventure-blanche-eau-de-parfum-per-uomo/",
+    family: "Agrumato Aromatico", season: "Estate", occasion: "Giorno",
+    notes: { top: "Bergamotto, Limone", heart: "Te, Gelsomino", base: "Muschio, Legno di sandalo" },
+    intensity: 6, personal: "Versione fresca di L'Aventure" },
+  { id: 27, name: "Rasasi Hawas", brand: "Rasasi", type: "arab", price: 28.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.40000.jpg",
+    notinoUrl: "https://www.notino.it/rasasi/hawas-eau-de-parfum-per-uomo/",
+    family: "Acquatico Aromatico", season: "Estate", occasion: "Giorno",
+    notes: { top: "Mele, Bergamotto, Limone", heart: "Plumeria, Cardamomo", base: "Muschio, Ambra, Legno di sandalo" },
+    intensity: 7, personal: "Acquatico fruttato molto apprezzato, clone di Invictus Aqua" },
+  { id: 28, name: "Shaghaf Oud", brand: "Swiss Arabian", type: "arab", price: 32.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.42000.jpg",
+    notinoUrl: "https://www.notino.it/swiss-arabian/shaghaf-oud-eau-de-parfum-unisex/",
+    family: "Orientale Oud", season: "Inverno", occasion: "Serata",
+    notes: { top: "Zafferano, Oud", heart: "Rosa, Gelsomino", base: "Muschio, Vaniglia, Prugna" },
+    intensity: 9, personal: "Oud intenso e duraturo, qualita Swiss Arabian" },
+  { id: 29, name: "Sauvage", brand: "Dior", type: "designer", price: 85.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.31881.jpg",
+    notinoUrl: "https://www.notino.it/dior/sauvage-eau-de-toilette-per-uomo/",
+    family: "Aromatico Fougere", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Bergamotto, Pepe", heart: "Lavanda, Pepe rosa", base: "Ambroxan, Legno di cedro" },
+    intensity: 8, personal: "Classico moderno, versatile e maschile" },
+  { id: 30, name: "Bleu de Chanel", brand: "Chanel", type: "designer", price: 95.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.9095.jpg",
+    notinoUrl: "https://www.notino.it/chanel/bleu-de-chanel-eau-de-toilette-per-uomo/",
+    family: "Legnoso Aromatico", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Agrumi, Menta", heart: "Pepe, Noce moscata", base: "Muschio di quercia, Legno di cedro" },
+    intensity: 7, personal: "Eleganza senza tempo, perfetto per ogni occasione" },
+  { id: 31, name: "Acqua di Gio", brand: "Giorgio Armani", type: "designer", price: 75.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.410.jpg",
+    notinoUrl: "https://www.notino.it/giorgio-armani/acqua-di-gio-eau-de-toilette-per-uomo/",
+    family: "Acquatico Aromatico", season: "Estate", occasion: "Giorno",
+    notes: { top: "Limone, Bergamotto, Gelsomino", heart: "Persica, Noce moscata", base: "Muschio di quercia, Legno di cedro" },
+    intensity: 6, personal: "Il re degli acquatici, fresco e pulito" },
+  { id: 32, name: "1 Million", brand: "Paco Rabanne", type: "designer", price: 65.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.3347.jpg",
+    notinoUrl: "https://www.notino.it/paco-rabanne/1-million-eau-de-toilette-per-uomo/",
+    family: "Dolce Speziato", season: "Inverno", occasion: "Serata",
+    notes: { top: "Mandarino, Menta", heart: "Rosa, Cannella", base: "Ambra, Legno di guaiaco" },
+    intensity: 8, personal: "Dolcezza audace, ottima per uscite serali" },
+  { id: 33, name: "Eros", brand: "Versace", type: "designer", price: 60.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.19946.jpg",
+    notinoUrl: "https://www.notino.it/versace/eros-eau-de-toilette-per-uomo/",
+    family: "Aromatico Fresco", season: "Estate", occasion: "Serata",
+    notes: { top: "Menta, Mela verde, Limone", heart: "Tonka, Ambroxan", base: "Vaniglia, Muschio di quercia" },
+    intensity: 8, personal: "Fresco e dolce, molto giovane e vivace" },
+  { id: 34, name: "Terre d'Hermes", brand: "Hermes", type: "designer", price: 90.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.2315.jpg",
+    notinoUrl: "https://www.notino.it/hermes/terre-d-hermes-eau-de-toilette-per-uomo/",
+    family: "Chypre Legnoso", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Arancia, Pompelmo", heart: "Pepe, Pelargonio", base: "Legno di cedro, Vetiver, Benzoino" },
+    intensity: 7, personal: "Capolavoro di eleganza naturale, vetiver perfetto" },
+  { id: 35, name: "Dior Homme Intense", brand: "Dior", type: "designer", price: 88.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.13016.jpg",
+    notinoUrl: "https://www.notino.it/dior/dior-homme-intense-eau-de-parfum-per-uomo/",
+    family: "Orientale Legnoso", season: "Inverno", occasion: "Serata",
+    notes: { top: "Lavanda", heart: "Iris, Ambra", base: "Cedro, Vetiver" },
+    intensity: 8, personal: "Iris sofisticato, eleganza maschile" },
+  { id: 36, name: "La Nuit de l'Homme", brand: "YSL", type: "designer", price: 78.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.5527.jpg",
+    notinoUrl: "https://www.notino.it/ysl/la-nuit-de-l-homme-eau-de-toilette-per-uomo/",
+    family: "Orientale Speziato", season: "Autunno", occasion: "Serata",
+    notes: { top: "Cardamomo", heart: "Lavanda, Bergamotto", base: "Cedro, Vetiver" },
+    intensity: 7, personal: "Cardamomo seducente, perfetto per la sera" },
+  { id: 37, name: "Prada L'Homme", brand: "Prada", type: "designer", price: 82.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.39164.jpg",
+    notinoUrl: "https://www.notino.it/prada/prada-l-homme-eau-de-toilette-per-uomo/",
+    family: "Floreale Legnoso", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Neroli, Pepe", heart: "Iris, Violetta", base: "Ambra, Cedro" },
+    intensity: 6, personal: "Neroli pulito e sofisticato" },
+  { id: 38, name: "Allure Homme Sport", brand: "Chanel", type: "designer", price: 92.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.610.jpg",
+    notinoUrl: "https://www.notino.it/chanel/allure-homme-sport-eau-de-toilette-per-uomo/",
+    family: "Aromatico Fresco", season: "Estate", occasion: "Giorno",
+    notes: { top: "Mandarino, Menta", heart: "Pepe, Legno di cedro", base: "Muschio, Ambra, Tonka" },
+    intensity: 6, personal: "Sportivo e raffinato, fresco duraturo" },
+  { id: 39, name: "Invictus", brand: "Paco Rabanne", type: "designer", price: 62.0, rating: 7.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.19810.jpg",
+    notinoUrl: "https://www.notino.it/paco-rabanne/invictus-eau-de-toilette-per-uomo/",
+    family: "Acquatico Aromatico", season: "Estate", occasion: "Giorno",
+    notes: { top: "Mandarino, Pompelmo", heart: "Gelsomino, Alloro", base: "Ambra, Muschio di quercia" },
+    intensity: 7, personal: "Acquatico potente, molto apprezzato dai giovani" },
+  { id: 40, name: "The One", brand: "Dolce & Gabbana", type: "designer", price: 58.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.2055.jpg",
+    notinoUrl: "https://www.notino.it/dolce---gabbana/the-one-eau-de-toilette-per-uomo/",
+    family: "Orientale Speziato", season: "Autunno", occasion: "Serata",
+    notes: { top: "Pompelmo, Coriandolo", heart: "Zenzero, Cardamomo", base: "Ambra, Tabacco, Cedro" },
+    intensity: 7, personal: "Tabacco e zenzero in combo elegante" },
+  { id: 41, name: "Gentleman", brand: "Givenchy", type: "designer", price: 70.0, rating: 8.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.38796.jpg",
+    notinoUrl: "https://www.notino.it/givenchy/gentleman-eau-de-parfum-per-uomo/",
+    family: "Orientale Legnoso", season: "Autunno", occasion: "Serata",
+    notes: { top: "Pera, Cardamomo", heart: "Iris, Lavanda", base: "Cedro, Vaniglia, Patchouli" },
+    intensity: 7, personal: "Pera e iris, moderno e raffinato" },
+  { id: 42, name: "Spicebomb", brand: "Viktor & Rolf", type: "designer", price: 72.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.13847.jpg",
+    notinoUrl: "https://www.notino.it/viktor---rolf/spicebomb-eau-de-toilette-per-uomo/",
+    family: "Speziato Orientale", season: "Inverno", occasion: "Serata",
+    notes: { top: "Pepe rosa, Elemi", heart: "Cannella, Zafferano", base: "Tabacco, Vetiver, Legno" },
+    intensity: 8, personal: "Esplosione speziata, invernale perfetto" },
+  { id: 43, name: "Fahrenheit", brand: "Dior", type: "designer", price: 80.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.533.jpg",
+    notinoUrl: "https://www.notino.it/dior/fahrenheit-eau-de-toilette-per-uomo/",
+    family: "Legnoso Floreale", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Mandarino, Legno di cedro", heart: "Violetta, Noce moscata", base: "Muschio di quercia, Vetiver" },
+    intensity: 7, personal: "Violetta e benzina, icona senza tempo" },
+  { id: 44, name: "Baccarat Rouge 540", brand: "Maison Francis Kurkdjian", type: "niche", price: 220.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.37687.jpg",
+    notinoUrl: "https://www.notino.it/maison-francis-kurkdjian/baccarat-rouge-540-eau-de-parfum-unisex/",
+    family: "Orientale Floreale", season: "Inverno", occasion: "Serata",
+    notes: { top: "Zafferano, Gelsomino", heart: "Ambra, Legno di cedro", base: "Muschio, Abete" },
+    intensity: 8, personal: "Capolavoro assoluto, dolcezza ambrata unica" },
+  { id: 45, name: "Aventus", brand: "Creed", type: "niche", price: 280.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.9828.jpg",
+    notinoUrl: "https://www.notino.it/creed/aventus-eau-de-parfum-per-uomo/",
+    family: "Chypre Fruttato", season: "Primavera", occasion: "Giorno",
+    notes: { top: "Ananas, Bergamotto, Mele", heart: "Birch, Gelsomino", base: "Muschio di quercia, Ambra" },
+    intensity: 8, personal: "Il re delle niche, fruttato e fumoso" },
+  { id: 46, name: "Black Orchid", brand: "Tom Ford", type: "niche", price: 130.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.1825.jpg",
+    notinoUrl: "https://www.notino.it/tom-ford/black-orchid-eau-de-parfum-unisex/",
+    family: "Orientale Floreale", season: "Inverno", occasion: "Serata",
+    notes: { top: "Tartufo, Gelsomino", heart: "Orchidea nera, Ylang-ylang", base: "Patchouli, Vaniglia, Cioccolato" },
+    intensity: 9, personal: "Misterioso e opulento, orchidea nera iconica" },
+  { id: 47, name: "Oud Wood", brand: "Tom Ford", type: "niche", price: 150.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.1824.jpg",
+    notinoUrl: "https://www.notino.it/tom-ford/oud-wood-eau-de-parfum-unisex/",
+    family: "Legnoso Orientale", season: "Inverno", occasion: "Serata",
+    notes: { top: "Cardamomo, Pepe rosa", heart: "Oud, Sandalo", base: "Vaniglia, Vetiver, Ambra" },
+    intensity: 7, personal: "Oud accessibile e raffinato, intro perfetta al mondo oud" },
+  { id: 48, name: "Layton", brand: "Parfums de Marly", type: "niche", price: 200.0, rating: 8.5,
+    image: "https://fimgs.net/mdimg/perfume/375x500.39314.jpg",
+    notinoUrl: "https://www.notino.it/parfums-de-marly/layton-eau-de-parfum-per-uomo/",
+    family: "Orientale Fresco", season: "Autunno", occasion: "Giorno",
+    notes: { top: "Mele, Bergamotto, Lavanda", heart: "Gelsomino, Violetta", base: "Vaniglia, Cardamomo, Sandalo" },
+    intensity: 7, personal: "Mela e vaniglia, eleganza moderna" },
+  { id: 49, name: "Herod", brand: "Parfums de Marly", type: "niche", price: 195.0, rating: 9.0,
+    image: "https://fimgs.net/mdimg/perfume/375x500.25880.jpg",
+    notinoUrl: "https://www.notino.it/parfums-de-marly/herod-eau-de-parfum-per-uomo/",
+    family: "Tabacco Orientale", season: "Inverno", occasion: "Serata",
+    notes: { top: "Cannella, Pepe", heart: "Tabacco, Incenso", base: "Vaniglia, Muschio, Legno di cedro" },
+    intensity: 8, personal: "Tabacco dolce e speziato, capolavoro invernale" }
+];
 
-let currentFilter='tutti',currentSort='nome',currentTab='collezione',currentDiscovery='arabi',currentNoteFilter='tutti',selectedProfumo=null,gameBracket=[],gameRound=0,gameWinners=[],notes=JSON.parse(localStorage.getItem('pf_notes')||'{}'),settings=JSON.parse(localStorage.getItem('pf_settings')||'{"notif":true,"gps":true,"dark":true,"alert":true}'),lastAdvisorDate=localStorage.getItem('pf_advisor_date')||'',lastAdvisorIndex=parseInt(localStorage.getItem('pf_advisor_idx')||'0'),lastPriceUpdate=localStorage.getItem('pf_last_price_update')||'Mai';
+// WISHLIST (persistita in localStorage)
+let wishlist = JSON.parse(localStorage.getItem("profumotify_wishlist") || "[]");
+let currentFilter = "all";
+let searchQuery = "";
+let isAdmin = false;
 
-function doLogin(){const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;if(u==='giancarlo'&&p==='Profumo2026!'){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');initApp();}else{showToast('Username o password errati!');}}
-function doLogout(){if(confirm('Sei sicuro di voler uscire?')){document.getElementById('app').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('loginPass').value='';showToast('Logout effettuato!');}}
-function initApp(){loadMeteo();renderProfumi();renderNoteOlfattive();renderWishlist();renderDashboard();renderDiscovery();updateSettingsUI();document.getElementById('lastUpdatePrice').textContent=lastPriceUpdate;checkPriceAlerts();setInterval(checkPriceAlerts,12*60*60*1000);}
+// INIZIALIZZAZIONE
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => { document.getElementById("splash").classList.add("hidden"); }, 1800);
 
-function loadMeteo(){if(settings.gps&&navigator.geolocation){navigator.geolocation.getCurrentPosition(pos=>fetchMeteo(pos.coords.latitude,pos.coords.longitude),()=>fetchMeteo(41.12,16.87));}else{fetchMeteo(41.12,16.87);}}
-async function fetchMeteo(lat,lon){try{const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Europe/Rome`);const data=await res.json();updateMeteoUI(data.current.temperature_2m,data.current.relative_humidity_2m,data.current.weather_code);}catch(e){updateMeteoUI(24,65,1);}}
-function updateMeteoUI(t,h,w){const icons={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌧️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",71:"❄️",73:"❄️",75:"❄️",95:"⛈️",96:"⛈️",99:"⛈️"},conds={0:"Sereno",1:"Prevalentemente sereno",2:"Parzialmente nuvoloso",3:"Nuvoloso",45:"Nebbia",48:"Nebbia",51:"Pioggerella",53:"Pioggia",55:"Pioggia",61:"Pioggia",63:"Pioggia",65:"Pioggia",71:"Neve",73:"Neve",75:"Neve",95:"Temporale",96:"Temporale",99:"Temporale"};document.getElementById('meteoTemp').textContent=Math.round(t)+"°C";document.getElementById('meteoCity').textContent=settings.gps?"Posizione attuale":"Bari";document.getElementById('meteoIcon').textContent=icons[w]||"🌡️";document.getElementById('meteoCond').textContent=(conds[w]||"Condizioni variabili")+" | Umidità "+h+"%";generateAdvisor(t,h);}
-function generateAdvisor(t,h){let advice={consiglio:"Temperatura mite. Versatile, tutte le famiglie vanno bene.",famiglie:["Floreale","Aromatico","Legnoso"]};if(t>=25)advice={consiglio:"Giornata calda! Scegli profumi freschi, acquatici o agrumati.",famiglie:["Acquatico","Agrumato","Fresca"]};else if(t<=12)advice={consiglio:"Freddo! Orientale, speziato o legnoso per scaldare.",famiglie:["Orientale","Speziato","Legnoso"]};if(h>=70&&t>=20)advice={consiglio:"Umidità alta. Fresco e leggero per non appesantire.",famiglie:["Acquatico","Agrumato","Fresca"]};const suitable=PROFUMI.filter(p=>advice.famiglie.includes(p.famiglia));const today=new Date().toDateString();if(lastAdvisorDate!==today){lastAdvisorDate=today;lastAdvisorIndex=Math.floor(Math.random()*Math.max(1,suitable.length));localStorage.setItem('pf_advisor_date',today);localStorage.setItem('pf_advisor_idx',lastAdvisorIndex);}const start=lastAdvisorIndex%Math.max(1,suitable.length);const picks=[];for(let i=0;i<3;i++){const idx=(start+i)%suitable.length;if(suitable[idx])picks.push(suitable[idx]);}document.getElementById('meteoAdvice').textContent=advice.consiglio;if(document.getElementById('advisorText')){document.getElementById('advisorText').textContent=advice.consiglio+" Ecco i profumi ideali per oggi:";document.getElementById('advisorList').innerHTML=picks.map(p=>`<div class="advisor-chip" onclick="openProfumo('${p.id}')">${p.nome}</div>`).join('');}}
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/Profumotify/sw.js")
+      .then(r => console.log("SW registrato"))
+      .catch(e => console.log("SW errore:", e));
+  }
 
-function renderProfumi(){let list=[...PROFUMI];if(currentFilter!=='tutti'){list=list.filter(p=>{if(currentFilter==='arabo')return p.tipo==='Arabo';if(currentFilter==='designer')return p.tipo==='Designer';if(currentFilter==='estate')return p.stagione==='Estate';if(currentFilter==='inverno')return p.stagione==='Inverno';if(currentFilter==='giorno')return p.occasione==='Giorno';if(currentFilter==='sera')return p.occasione==='Sera';if(currentFilter==='formale')return p.occasione==='Formale';return true;});}const q=document.getElementById('searchInput')?.value.toLowerCase()||'';if(q)list=list.filter(p=>p.nome.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)||p.famiglia.toLowerCase().includes(q)||p.note_testa.toLowerCase().includes(q)||p.note_cuore.toLowerCase().includes(q)||p.note_fondo.toLowerCase().includes(q));list.sort((a,b)=>{if(currentSort==='nome')return a.nome.localeCompare(b.nome);if(currentSort==='prezzo')return a.prezzo_acquisto-b.prezzo_acquisto;if(currentSort==='rating')return b.rating-a.rating;if(currentSort==='data')return new Date(b.data_acquisto)-new Date(a.data_acquisto);if(currentSort==='brand')return a.brand.localeCompare(b.brand);return 0;});const grid=document.getElementById('profumiGrid');if(list.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2)">Nessun profumo trovato</div>';return;}grid.innerHTML=list.map(p=>{const color=BRAND_COLORS[p.brand]||'#666',stars='★'.repeat(Math.floor(p.rating))+'☆'.repeat(5-Math.floor(p.rating)),diff=p.prezzo_attuale-p.prezzo_acquisto,diffClass=diff>0?'up':diff<0?'down':'same',diffText=diff>0?`+€${diff}`:diff<0?`-€${Math.abs(diff)}`:'=';return`<div class="card fade-in" onclick="openProfumo('${p.id}')"><div class="card-img" style="background:linear-gradient(135deg,${color}22,${color}11)"><div class="placeholder">🌹</div><span class="brand-badge" style="background:${color}dd">${p.brand}</span><span class="type-badge">${p.concentrazione}</span></div><div class="card-body"><div class="card-name">${p.nome}</div><div class="card-meta"><span class="card-price">€${p.prezzo_attuale}</span><span class="card-rating"><span class="star">${stars}</span> ${p.rating}</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="card-season">${p.stagione}</span><span class="modal-price-diff ${diffClass}" style="font-size:10px">${diffText}</span></div></div></div>`;}).join('');}
-function setFilter(f){currentFilter=f;document.querySelectorAll('#tab-collezione .filter-chips .chip').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');renderProfumi();}
-function setSort(s){currentSort=s;document.querySelectorAll('.sort-bar .sort-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');renderProfumi();}
-function filterProfumi(){renderProfumi();}
+  fetchMeteo(41.12, 16.87);
+  renderCollection();
+  renderWishlist();
+  renderNotes();
+  renderDashboard();
+  renderDiscovery();
+  updateStats();
+});
 
-function openProfumo(id){const p=PROFUMI.find(x=>x.id===id);if(!p)return;selectedProfumo=p;document.getElementById('modalTitle').textContent=p.nome;document.getElementById('modalBrand').textContent=p.brand+" | "+p.tipo+" | "+p.concentrazione;document.getElementById('modalPrice').textContent="€"+p.prezzo_attuale;document.getElementById('modalBuyPrice').textContent="€"+p.prezzo_acquisto;const diff=p.prezzo_attuale-p.prezzo_acquisto,el=document.getElementById('modalDiff');el.className='modal-price-diff '+(diff>0?'up':diff<0?'down':'same');el.textContent=diff>0?`+€${diff} 📈`:diff<0?`-€${Math.abs(diff)} 📉`:'= 📊';const stars='★'.repeat(Math.floor(p.rating))+'☆'.repeat(5-Math.floor(p.rating));document.getElementById('modalRating').innerHTML=`<span style="color:var(--gold)">${stars}</span> ${p.rating}/5`;document.getElementById('noteTesta').innerHTML=p.note_testa.split(',').map(n=>`<span class="note-tag">${n.trim()}</span>`).join('');document.getElementById('noteCuore').innerHTML=p.note_cuore.split(',').map(n=>`<span class="note-tag">${n.trim()}</span>`).join('');document.getElementById('noteFondo').innerHTML=p.note_fondo.split(',').map(n=>`<span class="note-tag">${n.trim()}</span>`).join('');
-// Note valutate nel modal
-if(p.note_valutate){let nvHtml='';for(const[section,notes]of Object.entries(p.note_valutate)){const color=section==='testa'?'#f39c12':section==='cuore'?'#e74c3c':'#9b59b6';const label=section==='testa'?'TESTA':section==='cuore'?'CUORE':'FONDO';nvHtml+=`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${label}</div>`;for(const[note,val]of Object.entries(notes)){const barColor=NOTE_COLORS[val]||'#666';nvHtml+=`<div class="note-val-row"><span class="note-val-name">${note}</span><div class="note-val-cells">`;for(let i=0;i<10;i++){const filled=i<val;const cellColor=filled?barColor:'#2a2a4a';nvHtml+=`<div class="note-val-cell" style="background:${cellColor};color:${filled?'#fff':'#666'}">${filled?i+1:''}</div>`;}nvHtml+=`</div><span class="note-val-score" style="color:${barColor}">${val}/10</span></div>`;}nvHtml+='</div>';}document.getElementById('noteValutateContent').innerHTML=nvHtml;}else{document.getElementById('noteValutateContent').innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:20px">Note valutate non disponibili per questo profumo</div>';}
-document.getElementById('modalMeta').innerHTML=`<div class="meta-item"><div class="meta-label">Stagione</div><div class="meta-value">${p.stagione}</div></div><div class="meta-item"><div class="meta-label">Occasione</div><div class="meta-value">${p.occasione}</div></div><div class="meta-item"><div class="meta-label">Longevità</div><div class="meta-value">${p.longevita}</div></div><div class="meta-item"><div class="meta-label">Proiezione</div><div class="meta-value">${p.proiezione}</div></div><div class="meta-item"><div class="meta-label">Famiglia</div><div class="meta-value">${p.famiglia}</div></div><div class="meta-item"><div class="meta-label">Acquistato</div><div class="meta-value">${p.data_acquisto}</div></div>`;document.getElementById('notePersonale').value=notes[p.id]||'';const color=BRAND_COLORS[p.brand]||'#666';document.getElementById('modalPlaceholder').style.background=`linear-gradient(135deg,${color}33,${color}11)`;document.getElementById('detailModal').classList.add('active');document.body.style.overflow='hidden';}
-function closeDetailModal(){document.getElementById('detailModal').classList.remove('active');document.body.style.overflow='';}
-function closeModal(e){if(e.target.classList.contains('modal-overlay')){closeDetailModal();closeResetModal();closeUpdatePricesModal();}}
-function openLink(){if(selectedProfumo)window.open(selectedProfumo.link,'_blank');}
-function shareProfumo(){if(!selectedProfumo)return;const text=`🌹 ${selectedProfumo.nome} di ${selectedProfumo.brand} — €${selectedProfumo.prezzo_attuale}\n🌸 ${selectedProfumo.famiglia} | ${selectedProfumo.stagione}\n${selectedProfumo.link}`;if(navigator.share){navigator.share({title:selectedProfumo.nome,text:text});}else{navigator.clipboard.writeText(text);showToast('Copiato negli appunti!');}}
-function saveNote(){if(!selectedProfumo)return;const val=document.getElementById('notePersonale').value;if(val.trim()){notes[selectedProfumo.id]=val;}else{delete notes[selectedProfumo.id];}localStorage.setItem('pf_notes',JSON.stringify(notes));showToast('Nota salvata!');}
+// METEO - Fix CORS con fallback immediato Bari
+async function fetchMeteo(lat, lon) {
+  const tempEl = document.getElementById("weatherTemp");
+  const descEl = document.getElementById("weatherDesc");
+  const iconEl = document.getElementById("weatherIcon");
 
-// ========== NOTE OLFATTIVE VALUTATE ==========
-function renderNoteOlfattive(){const c=document.getElementById('noteOlfattiveContainer');if(!c)return;let list=[...PROFUMI];if(currentNoteFilter!=='tutti'){list=list.filter(p=>p.note_valutate&&p.note_valutate[currentNoteFilter]);}c.innerHTML=list.map(p=>{const color=BRAND_COLORS[p.brand]||'#666';let sectionsHtml='';if(p.note_valutate){for(const[section,notes]of Object.entries(p.note_valutate)){if(currentNoteFilter!=='tutti'&&section!==currentNoteFilter)continue;const secColor=section==='testa'?'#f39c12':section==='cuore'?'#e74c3c':'#9b59b6';const label=section==='testa'?'TESTA':section==='cuore'?'CUORE':'FONDO';sectionsHtml+=`<div class="note-olf-section"><div class="note-olf-section-title ${section}">${label}</div>`;for(const[note,val]of Object.entries(notes)){const barColor=NOTE_COLORS[val]||'#666';const barWidth=val*10;sectionsHtml+=`<div class="note-olf-item"><span class="note-olf-note-name">${note}</span><div class="note-olf-bar"><div class="note-olf-bar-fill" style="width:${barWidth}%;background:${barColor}"></div></div><span class="note-olf-score" style="color:${barColor}">${val}</span></div>`;}sectionsHtml+='</div>';}if(currentNoteFilter!=='tutti'&&!p.note_valutate[currentNoteFilter])sectionsHtml='<div style="color:var(--text2);font-size:12px;padding:10px">Nessuna nota in questa sezione</div>';}else{sectionsHtml='<div style="color:var(--text2);font-size:12px;padding:10px">Note valutate non disponibili</div>';}return`<div class="note-olf-card"><div class="note-olf-header"><div class="note-olf-img" style="background:${color}22">🌹</div><div class="note-olf-info"><div class="note-olf-name">${p.nome}</div><div class="note-olf-brand">${p.brand}</div><span class="note-olf-famiglia">${p.famiglia}</span></div></div>${sectionsHtml}</div>`;}).join('');}
-function setNoteFilter(f){currentNoteFilter=f;document.querySelectorAll('#tab-note-olfattive .chip').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');renderNoteOlfattive();}
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Europe/Rome`);
+    if (!res.ok) throw new Error("API error");
+    const data = await res.json();
+    updateMeteoUI(data.current.temperature_2m, data.current.relative_humidity_2m, data.current.weather_code);
+  } catch (e) {
+    console.log("Meteo API fallita, uso fallback Bari");
+    updateMeteoUI(24, 65, 1);
+  }
+}
 
-function renderWishlist(){const c=document.getElementById('wishlistContainer');document.getElementById('wlSubtitle').textContent=WISHLIST.length+" profumi in lista";c.innerHTML=WISHLIST.map(w=>{const color=BRAND_COLORS[w.brand]||'#666',pClass='p'+w.priorita,diff=w.prezzo_attuale-w.prezzo_target,alert=diff<=0?`<div class="wl-alert">🚨 Prezzo target raggiunto! (-€${Math.abs(diff)})</div>`:'';return`<div class="wl-card"><div class="wl-img" style="background:${color}22">🌹</div><div class="wl-info"><div class="wl-name">${w.nome}</div><div class="wl-brand">${w.brand}</div><div class="wl-price-row"><span class="wl-target">Target: €${w.prezzo_target}</span><span class="wl-current">Attuale: €${w.prezzo_attuale}</span><span class="wl-priority ${pClass}">P${w.priorita}</span></div>${alert}<div style="font-size:11px;color:var(--text2);margin-top:4px">${w.note}</div></div></div>`;}).join('');}
-function checkPricesManual(){showToast('Controllo prezzi in corso...');setTimeout(()=>{showToast('Nessuna offerta trovata al momento');},1500);}
-function checkPriceAlerts(){if(!settings.alert)return;const alerts=WISHLIST.filter(w=>w.prezzo_attuale<=w.prezzo_target);if(alerts.length>0){showToast(`🚨 ${alerts.length} profumo/i in wishlist sotto il target!`);}}
-function showAddWishlist(){showToast('Funzione aggiungi wishlist - da implementare');}
+function updateMeteoUI(temp, humidity, code) {
+  const tempEl = document.getElementById("weatherTemp");
+  const descEl = document.getElementById("weatherDesc");
+  const iconEl = document.getElementById("weatherIcon");
+  tempEl.textContent = `${Math.round(temp)}°C`;
+  const weatherMap = {
+    0: ["☀️", "Sereno"], 1: ["🌤️", "Poco nuvoloso"], 2: ["⛅", "Nuvoloso"], 3: ["☁️", "Coperto"],
+    45: ["🌫️", "Nebbia"], 48: ["🌫️", "Nebbia"],
+    51: ["🌧️", "Pioggerella"], 53: ["🌧️", "Pioggia"], 55: ["🌧️", "Pioggia forte"],
+    61: ["🌧️", "Pioggia"], 63: ["🌧️", "Pioggia"], 65: ["🌧️", "Pioggia forte"],
+    71: ["🌨️", "Neve"], 73: ["🌨️", "Neve"], 75: ["🌨️", "Neve forte"],
+    95: ["⛈️", "Temporale"], 96: ["⛈️", "Temporale"], 99: ["⛈️", "Temporale"]
+  };
+  const [icon, desc] = weatherMap[code] || ["🌤️", "Variabile"];
+  iconEl.textContent = icon;
+  descEl.textContent = `${desc} • Umidità ${humidity}%`;
+}
 
-// ========== AGGIORNAMENTO PREZZI ==========
-function showUpdatePricesModal(){document.getElementById('updatePricesModal').classList.add('active');document.body.style.overflow='hidden';document.getElementById('updateProgressBar').style.width='0%';document.getElementById('updateProgressText').textContent='0/49 profumi';document.getElementById('updateResults').style.display='none';document.getElementById('btnStartUpdate').style.display='block';document.getElementById('btnStartUpdate').textContent='🚀 Avvia aggiornamento';}
-function closeUpdatePricesModal(){document.getElementById('updatePricesModal').classList.remove('active');document.body.style.overflow='';}
-async function startPriceUpdate(){document.getElementById('btnStartUpdate').style.display='none';const total=PROFUMI.length;let updated=0;const results=[];for(let i=0;i<total;i++){const p=PROFUMI[i];await new Promise(r=>setTimeout(r,200+Math.random()*300));updated++;document.getElementById('updateProgressText').textContent=`${updated}/${total} profumi`;document.getElementById('updateProgressBar').style.width=`${(updated/total*100).toFixed(0)}%`;const variation=(Math.random()-.5)*4;const newPrice=Math.max(10,Math.round((p.prezzo_attuale+variation)*100)/100);const diff=newPrice-p.prezzo_attuale;if(Math.abs(diff)>=1){results.push(`${p.nome}: €${p.prezzo_attuale} → €${newPrice} (${diff>0?'+':''}€${diff.toFixed(1)})`);p.prezzo_attuale=newPrice;}}document.getElementById('updateResults').style.display='block';const now=new Date().toLocaleString('it-IT');lastPriceUpdate=now;localStorage.setItem('pf_last_price_update',now);document.getElementById('lastUpdatePrice').textContent=now;if(results.length===0){document.getElementById('updateResultsContent').innerHTML='<div style="color:var(--green)">✅ Nessuna variazione significativa rilevata</div>';}else{document.getElementById('updateResultsContent').innerHTML=results.map(r=>`<div>${r}</div>`).join('');}renderProfumi();renderWishlist();renderDashboard();showToast(`Aggiornamento completato! ${results.length} prezzi modificati`);}
+// NAVIGAZIONE TABS
+function switchTab(tab) {
+  document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+  document.getElementById(`tab-${tab}`).style.display = "block";
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach((item, i) => {
+    const tabs = ["collection","wishlist","notes","dashboard","discovery"];
+    if (tabs[i] === tab) item.classList.add("active");
+  });
+  if (tab === "wishlist") renderWishlist();
+  if (tab === "notes") renderNotes();
+  if (tab === "dashboard") renderDashboard();
+  if (tab === "discovery") renderDiscovery();
+}
 
-function renderDashboard(){const totalSpent=PROFUMI.reduce((s,p)=>s+p.prezzo_acquisto,0),totalValue=PROFUMI.reduce((s,p)=>s+p.prezzo_attuale,0),diff=totalValue-totalSpent,brands=[...new Set(PROFUMI.map(p=>p.brand))].length;document.getElementById('statGrid').innerHTML=`<div class="stat-card"><div class="stat-value">${PROFUMI.length}</div><div class="stat-label">Profumi</div></div><div class="stat-card"><div class="stat-value">${brands}</div><div class="stat-label">Brand</div></div><div class="stat-card"><div class="stat-value">€${totalSpent.toFixed(0)}</div><div class="stat-label">Speso</div></div><div class="stat-card"><div class="stat-value" style="color:${diff>=0?'var(--green)':'#e74c3c'}">${diff>=0?'+':''}€${diff.toFixed(0)}</div><div class="stat-label">Plus/Minus</div></div>`;const bCounts={};PROFUMI.forEach(p=>bCounts[p.brand]=(bCounts[p.brand]||0)+1);const bSorted=Object.entries(bCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);const bMax=bSorted[0]?.[1]||1;document.getElementById('brandChart').innerHTML=bSorted.map(([b,c])=>`<div class="chart-bar"><div class="chart-label">${b}</div><div class="chart-track"><div class="chart-fill" style="width:${(c/bMax*100).toFixed(0)}%;background:${BRAND_COLORS[b]||'#666'}"><span>${c}</span></div></div></div>`).join('');const fCounts={};PROFUMI.forEach(p=>fCounts[p.famiglia]=(fCounts[p.famiglia]||0)+1);const fSorted=Object.entries(fCounts).sort((a,b)=>b[1]-a[1]);const fMax=fSorted[0]?.[1]||1;const fColors={"Acquatico":"#3498db","Agrumato":"#f1c40f","Orientale":"#e74c3c","Speziato":"#d35400","Floreale":"#e91e63","Legnoso":"#8B4513","Aromatico":"#27ae60","Dolce":"#9b59b6"};document.getElementById('familyChart').innerHTML=fSorted.map(([f,c])=>`<div class="chart-bar"><div class="chart-label">${f}</div><div class="chart-track"><div class="chart-fill" style="width:${(c/fMax*100).toFixed(0)}%;background:${fColors[f]||'#666'}"><span>${c}</span></div></div></div>`).join('');const sCounts={};PROFUMI.forEach(p=>sCounts[p.stagione]=(sCounts[p.stagione]||0)+1);const sSorted=Object.entries(sCounts).sort((a,b)=>b[1]-a[1]);const sMax=sSorted[0]?.[1]||1;const sColors={"Estate":"#f1c40f","Inverno":"#3498db","Primavera":"#2ecc71","Autunno":"#e67e22"};document.getElementById('seasonChart').innerHTML=sSorted.map(([s,c])=>`<div class="chart-bar"><div class="chart-label">${s}</div><div class="chart-track"><div class="chart-fill" style="width:${(c/sMax*100).toFixed(0)}%;background:${sColors[s]||'#666'}"><span>${c}</span></div></div></div>`).join('');}
+// COLLEZIONE - Render griglia profumi con immagini reali
+function renderCollection() {
+  const grid = document.getElementById("perfumeGrid");
+  let filtered = PERFUMES;
+  if (currentFilter !== "all") filtered = filtered.filter(p => p.type === currentFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+  }
 
-function initGame(){gameBracket=[...PROFUMI].sort(()=>Math.random()-.5).slice(0,8);gameRound=0;gameWinners=[];renderGameRound();}
-function renderGameRound(){const totalRounds=Math.ceil(Math.log2(gameBracket.length));const currentPairs=[];for(let i=0;i<gameBracket.length;i+=2){if(gameBracket[i+1])currentPairs.push([gameBracket[i],gameBracket[i+1]]);else gameWinners.push(gameBracket[i]);}document.getElementById('gameRound').textContent=gameRound===0?"Round 1 di "+totalRounds:gameRound<totalRounds?"Round "+(gameRound+1)+" di "+totalRounds:"Finale!";document.getElementById('gameCards').innerHTML=currentPairs.map((pair,idx)=>`<div style="display:flex;gap:12px;justify-content:center;width:100%"><div class="game-card" onclick="pickWinner(${idx},0)"><div class="game-card-img">🌹</div><div class="game-card-name">${pair[0].nome}</div><div class="game-card-brand">${pair[0].brand}</div></div><div class="game-card" onclick="pickWinner(${idx},1)"><div class="game-card-img">🌹</div><div class="game-card-name">${pair[1].nome}</div><div class="game-card-brand">${pair[1].brand}</div></div></div>`).join('');const progress=((gameRound)/totalRounds*100);document.getElementById('gameProgress').style.width=progress+"%";}
-function pickWinner(pairIdx,winnerIdx){const pairs=[];for(let i=0;i<gameBracket.length;i+=2){if(gameBracket[i+1])pairs.push([gameBracket[i],gameBracket[i+1]]);}gameWinners.push(pairs[pairIdx][winnerIdx]);gameRound++;if(gameWinners.length===1&&pairs.length===1){showWinner(gameWinners[0]);}else if(gameWinners.length>=Math.ceil(gameBracket.length/2)){gameBracket=gameWinners;gameWinners=[];renderGameRound();}else{renderGameRound();}}
-function showWinner(w){document.getElementById('gameArea').classList.add('hidden');document.getElementById('gameWinner').classList.remove('hidden');document.getElementById('winnerName').textContent=w.nome;document.getElementById('winnerBrand').textContent=w.brand+" | "+w.famiglia;}
-function restartGame(){document.getElementById('gameArea').classList.remove('hidden');document.getElementById('gameWinner').classList.add('hidden');initGame();}
+  grid.innerHTML = filtered.map((p, i) => {
+    const isWished = wishlist.includes(p.id);
+    const badgeClass = p.type === "arab" ? "badge-arab" : p.type === "designer" ? "badge-designer" : "badge-niche";
+    const badgeText = p.type === "arab" ? "ARABO" : p.type === "designer" ? "DESIGNER" : "NICHE";
+    const stars = "★".repeat(Math.floor(p.rating / 2)) + "☆".repeat(5 - Math.floor(p.rating / 2));
+    return `
+      <div class="perfume-card fade-in ${isWished ? "wishlist-active" : ""}" style="animation-delay:${i*0.03}s" onclick="showDetail(${p.id})">
+        <div class="perfume-img-wrap">
+          <img src="${p.image}" alt="${p.name}" loading="lazy" 
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="perfume-img-placeholder" style="display:none">🌹</div>
+          <span class="perfume-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <button class="wishlist-btn ${isWished ? "active" : ""}" onclick="event.stopPropagation(); toggleWishlist(${p.id})" title="${isWished ? "Rimuovi da" : "Aggiungi a"} wishlist">
+          ${isWished ? "❤️" : "🤍"}
+        </button>
+        <div class="perfume-info">
+          <div class="perfume-brand">${p.brand}</div>
+          <div class="perfume-name">${p.name}</div>
+          <div class="perfume-meta">
+            <span class="perfume-price">€${p.price.toFixed(2)}</span>
+            <span class="perfume-rating">${stars.split("").map(s => `<span class="star ${s==="★"?"":"empty"}">${s}</span>`).join("")}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
 
-function renderDiscovery(){const c=document.getElementById('discoveryContent');if(!c)return;if(currentDiscovery==='arabi'){const arabi=PROFUMI.filter(p=>p.tipo==='Arabo');c.innerHTML=`<div class="discovery-grid">${arabi.map(p=>`<div class="card fade-in" onclick="openProfumo('${p.id}')"><div class="card-img" style="background:linear-gradient(135deg,${BRAND_COLORS[p.brand]||'#666'}22,${BRAND_COLORS[p.brand]||'#666'}11)"><div class="placeholder">🌹</div><span class="brand-badge" style="background:${BRAND_COLORS[p.brand]||'#666'}dd">${p.brand}</span></div><div class="card-body"><div class="card-name">${p.nome}</div><div class="card-brand">${p.brand} | ${p.famiglia}</div></div></div>`).join('')}</div>`;}else if(currentDiscovery==='designer'){const des=PROFUMI.filter(p=>p.tipo==='Designer');c.innerHTML=`<div class="discovery-grid">${des.map(p=>`<div class="card fade-in" onclick="openProfumo('${p.id}')"><div class="card-img" style="background:linear-gradient(135deg,${BRAND_COLORS[p.brand]||'#666'}22,${BRAND_COLORS[p.brand]||'#666'}11)"><div class="placeholder">🌹</div><span class="brand-badge" style="background:${BRAND_COLORS[p.brand]||'#666'}dd">${p.brand}</span></div><div class="card-body"><div class="card-name">${p.nome}</div><div class="card-brand">${p.brand} | ${p.famiglia}</div></div></div>`).join('')}</div>`;}else if(currentDiscovery==='nicchia'){c.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--text2)"><div style="font-size:48px;margin-bottom:16px">💎</div><div style="font-size:16px;font-weight:600;margin-bottom:8px">Sezione Nicchia</div><div style="font-size:13px">Qui troverai profumi di nicchia consigliati.<br>Aggiungi i tuoi preferiti alla wishlist!</div></div>`;}else if(currentDiscovery==='brand'){const bCounts={};PROFUMI.forEach(p=>bCounts[p.brand]=(bCounts[p.brand]||0)+1);const sorted=Object.entries(bCounts).sort((a,b)=>b[1]-a[1]);c.innerHTML=`<div style="padding:0 0 100px">${sorted.map(([b,c])=>`<div style="background:var(--bg2);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #2a2a4a;display:flex;align-items:center;gap:16px"><div style="width:50px;height:50px;border-radius:12px;background:${BRAND_COLORS[b]||'#666'}22;display:flex;align-items:center;justify-content:center;font-size:24px">🏷️</div><div style="flex:1"><div style="font-size:16px;font-weight:600">${b}</div><div style="font-size:13px;color:var(--text2)">${c} profumi in collezione</div></div><div style="font-size:20px;font-weight:700;color:var(--gold)">${c}</div></div>`).join('')}</div>`;}else if(currentDiscovery==='nuovi'){c.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--text2)"><div style="font-size:48px;margin-bottom:16px">✨</div><div style="font-size:16px;font-weight:600;margin-bottom:8px">Novità Profumotify</div><div style="font-size:13px">Alert novità in arrivo!<br>Riceverai notifiche sui nuovi rilasci.</div></div>`;}}
-function setDiscovery(d){currentDiscovery=d;document.querySelectorAll('.discovery-tabs .disc-tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');renderDiscovery();}
+function filterType(type) {
+  currentFilter = type;
+  document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+  event.target.classList.add("active");
+  renderCollection();
+}
 
-function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));document.getElementById('tab-'+tab).classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));event.currentTarget.classList.add('active');if(tab==='sfida'&&gameBracket.length===0)initGame();if(tab==='dashboard')renderDashboard();if(tab==='note-olfattive')renderNoteOlfattive();}
+function searchPerfumes() {
+  searchQuery = document.getElementById("searchBox").value;
+  renderCollection();
+}
 
-function showProfile(){switchTab('profilo');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));}
-function updateSettingsUI(){document.getElementById('toggleNotif').classList.toggle('on',settings.notif);document.getElementById('toggleGPS').classList.toggle('on',settings.gps);document.getElementById('toggleDark').classList.toggle('on',settings.dark);document.getElementById('toggleAlert').classList.toggle('on',settings.alert);document.getElementById('profStatCount').textContent=PROFUMI.length;document.getElementById('profStatBrands').textContent=[...new Set(PROFUMI.map(p=>p.brand))].length;const val=PROFUMI.reduce((s,p)=>s+p.prezzo_attuale,0);document.getElementById('profStatValue').textContent='€'+(val/1000).toFixed(1)+'k';}
-function toggleSetting(k){settings[k]=!settings[k];localStorage.setItem('pf_settings',JSON.stringify(settings));updateSettingsUI();showToast(k==='dark'?(settings.dark?'Tema scuro attivato':'Tema chiaro attivato'):'Impostazione aggiornata');if(k==='dark'){document.documentElement.style.setProperty('--bg',settings.dark?'#0f0f1a':'#f5f5f5');document.documentElement.style.setProperty('--bg2',settings.dark?'#1a1a2e':'#fff');document.documentElement.style.setProperty('--bg3',settings.dark?'#16213e':'#f0f0f0');document.documentElement.style.setProperty('--text',settings.dark?'#eee':'#333');document.documentElement.style.setProperty('--text2',settings.dark?'#aaa':'#666');}}
-function toggleTheme(){toggleSetting('dark');}
+// WISHLIST - Toggle + Rimuovi con tasto elimina
+function toggleWishlist(id) {
+  const idx = wishlist.indexOf(id);
+  const perfume = PERFUMES.find(p => p.id === id);
+  if (idx > -1) {
+    wishlist.splice(idx, 1);
+    showToast(`❌ ${perfume.name} rimosso dalla wishlist`);
+  } else {
+    wishlist.push(id);
+    showToast(`❤️ ${perfume.name} aggiunto alla wishlist`);
+  }
+  localStorage.setItem("profumotify_wishlist", JSON.stringify(wishlist));
+  renderCollection();
+  renderWishlist();
+}
 
-function showResetModal(){document.getElementById('resetModal').classList.add('active');document.body.style.overflow='hidden';}
-function closeResetModal(){document.getElementById('resetModal').classList.remove('active');document.body.style.overflow='';}
-function confirmReset(){const p=document.getElementById('resetPassword').value;if(p!=='Profumo2026!'){showToast('Password errata!');return;}localStorage.clear();showToast('Collezione resettata! Ricarica la pagina.');setTimeout(()=>location.reload(),2000);}
+function removeFromWishlist(id) {
+  const idx = wishlist.indexOf(id);
+  if (idx > -1) {
+    const perfume = PERFUMES.find(p => p.id === id);
+    wishlist.splice(idx, 1);
+    localStorage.setItem("profumotify_wishlist", JSON.stringify(wishlist));
+    renderCollection();
+    renderWishlist();
+    showToast(`❌ ${perfume.name} rimosso dalla wishlist`);
+  }
+}
 
-function sendChat(){const inp=document.getElementById('chatInput'),msg=inp.value.trim();if(!msg)return;const box=document.getElementById('chatMessages');box.innerHTML+=`<div class="chat-msg out">${msg}</div>`;inp.value='';box.scrollTop=box.scrollHeight;setTimeout(()=>{const risposte=["Ottima scelta! Quel profumo è perfetto per la stagione attuale.","Hai provato a confrontarlo con altri della stessa famiglia olfattiva?","Ti consiglio di tenerlo d'occhio per eventuali sconti!","Un classico! Non può mancare in una collezione seria.","Famiglia olfattiva interessante, hai notato le note di fondo?"];box.innerHTML+=`<div class="chat-msg in">${risposte[Math.floor(Math.random()*risposte.length)]}</div>`;box.scrollTop=box.scrollHeight;},800);}
+function renderWishlist() {
+  const container = document.getElementById("wishlistContent");
+  if (wishlist.length === 0) {
+    container.innerHTML = `
+      <div class="wishlist-empty">
+        <div class="icon">💎</div>
+        <h3>Wishlist vuota</h3>
+        <p>Tocca il cuore 🤍 sui profumi per aggiungerli qui</p>
+      </div>
+    `;
+    return;
+  }
+  const wished = PERFUMES.filter(p => wishlist.includes(p.id));
+  const total = wished.reduce((s, p) => s + p.price, 0);
+  container.innerHTML = `
+    <div style="margin-bottom:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase;">Totale wishlist</div>
+          <div style="font-size:24px; font-weight:700; color:var(--primary);">€${total.toFixed(2)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px; color:var(--text-muted);">${wished.length} profumi</div>
+          <button class="btn btn-outline" style="margin-top:8px; padding:8px 16px; font-size:12px;" onclick="findOffers()">🔍 Cerca offerte</button>
+        </div>
+      </div>
+    </div>
+    ${wished.map(p => `
+      <div class="wishlist-item">
+        <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="placeholder" style="display:none">🌹</div>
+        <div class="wishlist-item-info">
+          <div class="wishlist-item-brand">${p.brand}</div>
+          <div class="wishlist-item-name">${p.name}</div>
+          <div class="wishlist-item-price">€${p.price.toFixed(2)}</div>
+        </div>
+        <button class="wishlist-item-remove" onclick="removeFromWishlist(${p.id})" title="Rimuovi dalla wishlist">🗑️</button>
+      </div>
+    `).join("")}
+  `;
+}
 
-function handleFile(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{document.getElementById('scannerPreview').src=e.target.result;document.getElementById('scannerPreview').style.display='block';document.getElementById('scannerResult').style.display='block';document.getElementById('scannerResult').innerHTML=`<div style="font-weight:600;margin-bottom:8px">🔍 Risultato scansione (simulato)</div><div style="font-size:13px;color:var(--text2);line-height:1.6">Nome rilevato: <strong>Profumo Sconosciuto</strong><br>Brand: Non identificato<br>Prezzo: --<br><br><em>Per una scansione reale, carica l'app su un server con OCR.</em></div>`;};reader.readAsDataURL(file);}
-function handleDrop(e){e.preventDefault();e.currentTarget.classList.remove('dragover');const file=e.dataTransfer.files[0];if(file&&file.type.startsWith('image/')){const reader=new FileReader();reader.onload=ev=>{document.getElementById('scannerPreview').src=ev.target.result;document.getElementById('scannerPreview').style.display='block';document.getElementById('scannerResult').style.display='block';document.getElementById('scannerResult').innerHTML=`<div style="font-weight:600;margin-bottom:8px">🔍 Risultato scansione (simulato)</div><div style="font-size:13px;color:var(--text2);line-height:1.6">Nome rilevato: <strong>Profumo Sconosciuto</strong><br>Brand: Non identificato<br>Prezzo: --<br><br><em>Per una scansione reale, carica l'app su un server con OCR.</em></div>`;};reader.readAsDataURL(file);}}
+function findOffers() {
+  showToast("🔍 Apertura Notino per cercare offerte...");
+  setTimeout(() => { window.open("https://www.notino.it/profumi/sconti/", "_blank"); }, 1000);
+}
 
-function exportCSV(){let csv="Nome,Brand,Tipo,Concentrazione,Prezzo Acquisto,Prezzo Attuale,Rating,Stagione,Occasione,Famiglia,Data Acquisto\n";PROFUMI.forEach(p=>{csv+=`"${p.nome}","${p.brand}","${p.tipo}","${p.concentrazione}",${p.prezzo_acquisto},${p.prezzo_attuale},${p.rating},"${p.stagione}","${p.occasione}","${p.famiglia}","${p.data_acquisto}"\n`;});const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='profumotify_collezione.csv';a.click();showToast('CSV esportato!');}
+// DETAIL MODAL - Con link Notino corretti
+function showDetail(id) {
+  const p = PERFUMES.find(x => x.id === id);
+  const isWished = wishlist.includes(id);
+  const content = document.getElementById("detailContent");
+  content.innerHTML = `
+    <div class="detail-img">
+      <img src="${p.image}" alt="${p.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="placeholder" style="display:none">🌹</div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-brand">${p.brand}</div>
+      <div class="detail-name">${p.name}</div>
+      <div class="detail-tags">
+        <span class="tag family">${p.family}</span>
+        <span class="tag season">${p.season}</span>
+        <span class="tag occasion">${p.occasion}</span>
+      </div>
+      <div class="detail-section">
+        <h3>🌸 Note Olfattive</h3>
+        <div class="notes-grid">
+          <div class="note-item top"><strong>Top:</strong> ${p.notes.top}</div>
+          <div class="note-item heart"><strong>Heart:</strong> ${p.notes.heart}</div>
+          <div class="note-item base"><strong>Base:</strong> ${p.notes.base}</div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3>⭐ Valutazione Personale</h3>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+          <span style="font-size:32px; font-weight:700; color:var(--primary);">${p.rating}</span>
+          <span style="color:var(--text-muted);">/ 10</span>
+          <span style="margin-left:auto; padding:6px 14px; border-radius:20px; background:var(--bg-elevated); font-size:13px;">
+            Intensità: ${"🔥".repeat(p.intensity)}${"○".repeat(10-p.intensity)}
+          </span>
+        </div>
+      </div>
+      ${p.personal ? `
+      <div class="detail-section">
+        <h3>📝 Note Personali</h3>
+        <p style="color:var(--text-muted); font-size:14px; line-height:1.6; margin-top:8px;">${p.personal}</p>
+      </div>
+      ` : ""}
+      <div class="detail-price-row">
+        <span class="detail-price">€${p.price.toFixed(2)}</span>
+        <span style="color:var(--text-muted); font-size:13px;">Prezzo stimato</span>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary" onclick="window.open('${p.notinoUrl}', '_blank')">🛒 Vedi su Notino</button>
+        <button class="btn ${isWished ? "btn-danger" : "btn-outline"}" onclick="toggleWishlist(${p.id}); showDetail(${p.id})">
+          ${isWished ? "❤️ Rimuovi" : "🤍 Wishlist"}
+        </button>
+      </div>
+    </div>
+  `;
+  document.getElementById("detailModal").classList.add("active");
+}
 
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+document.getElementById("detailModal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("active");
+});
+document.getElementById("loginModal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("active");
+});
+document.getElementById("priceModal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("active");
+});
+
+// NOTE OLFATTIVE
+function renderNotes() {
+  const container = document.getElementById("notesContent");
+  const allNotes = [];
+  PERFUMES.forEach(p => {
+    allNotes.push({ perfume: p, note: p.notes.top, type: "top", label: "Top" });
+    allNotes.push({ perfume: p, note: p.notes.heart, type: "heart", label: "Heart" });
+    allNotes.push({ perfume: p, note: p.notes.base, type: "base", label: "Base" });
+  });
+  const grouped = {};
+  allNotes.forEach(n => {
+    const key = n.note.split(",")[0].trim();
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(n);
+  });
+  const sorted = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+  container.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <h3 style="font-size:18px; margin-bottom:8px;">🌸 Note più presenti</h3>
+      <p style="color:var(--text-muted); font-size:14px;">Scopri quali note compaiono più spesso nella tua collezione</p>
+    </div>
+    ${sorted.slice(0, 20).map(([note, items]) => `
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-weight:600; font-size:16px;">${note}</span>
+          <span style="background:var(--primary); color:#1a1a2e; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">${items.length} profumi</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          ${items.map(i => `
+            <span style="padding:6px 12px; border-radius:10px; background:var(--bg-elevated); font-size:12px; cursor:pointer;" 
+                  onclick="showDetail(${i.perfume.id})" title="${i.perfume.brand} ${i.perfume.name}">
+              ${i.perfume.name} <span style="color:var(--text-muted);">(${i.label})</span>
+            </span>
+          `).join("")}
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// DASHBOARD
+function renderDashboard() {
+  const container = document.getElementById("dashboardContent");
+  const byType = { arab: 0, designer: 0, niche: 0 };
+  const bySeason = {};
+  const byBrand = {};
+  let totalValue = 0;
+  let avgRating = 0;
+  PERFUMES.forEach(p => {
+    byType[p.type]++;
+    bySeason[p.season] = (bySeason[p.season] || 0) + 1;
+    byBrand[p.brand] = (byBrand[p.brand] || 0) + 1;
+    totalValue += p.price;
+    avgRating += p.rating;
+  });
+  avgRating = (avgRating / PERFUMES.length).toFixed(1);
+  const topBrands = Object.entries(byBrand).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  container.innerHTML = `
+    <div class="stats-grid" style="margin-bottom:20px;">
+      <div class="stat-card"><div class="number">€${totalValue.toFixed(0)}</div><div class="label">Valore Collezione</div></div>
+      <div class="stat-card"><div class="number">${avgRating}</div><div class="label">Media Voti</div></div>
+      <div class="stat-card"><div class="number">${wishlist.length}</div><div class="label">In Wishlist</div></div>
+      <div class="stat-card"><div class="number">${Object.keys(byBrand).length}</div><div class="label">Brand Diversi</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">📊 Distribuzione per Tipo</div>
+      <div class="bar-chart">
+        ${Object.entries(byType).map(([type, count]) => {
+          const colors = { arab: "#ff6b9d", designer: "#60a5fa", niche: "#c9a227" };
+          const labels = { arab: "Arabi", designer: "Designer", niche: "Niche" };
+          return `
+            <div class="bar-item">
+              <div class="bar" style="height:${(count/28)*100}%; background:${colors[type]};"></div>
+              <div class="bar-label">${labels[type]}<br><strong>${count}</strong></div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">🌡️ Distribuzione per Stagione</div>
+      <div class="bar-chart">
+        ${["Primavera","Estate","Autunno","Inverno"].map(season => {
+          const count = bySeason[season] || 0;
+          const colors = { "Primavera":"#4ade80", "Estate":"#60a5fa", "Autunno":"#fbbf24", "Inverno":"#f87171" };
+          return `
+            <div class="bar-item">
+              <div class="bar" style="height:${Math.max((count/20)*100, 5)}%; background:${colors[season]};"></div>
+              <div class="bar-label">${season}<br><strong>${count}</strong></div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">🏆 Top Brand</div>
+      ${topBrands.map(([brand, count]) => `
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+          <div style="width:${Math.max(count*20, 40)}px; height:24px; background:var(--primary); border-radius:6px; display:flex; align-items:center; justify-content:center; color:#1a1a2e; font-size:12px; font-weight:600;">${count}</div>
+          <span style="font-size:14px;">${brand}</span>
+        </div>
+      `).join("")}
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">💡 Consiglio del Giorno</div>
+      <div id="dailySuggestion" style="padding:12px; background:var(--bg); border-radius:12px;"></div>
+    </div>
+  `;
+  generateDailySuggestion();
+}
+
+function generateDailySuggestion() {
+  const tempText = document.getElementById("weatherTemp")?.textContent || "20°C";
+  const temp = parseInt(tempText);
+  let season = "Primavera";
+  if (temp > 25) season = "Estate";
+  else if (temp < 15) season = "Inverno";
+  else if (temp < 20) season = "Autunno";
+  const suitable = PERFUMES.filter(p => p.season === season || p.season === "Primavera");
+  const pick = suitable[Math.floor(Math.random() * suitable.length)];
+  const el = document.getElementById("dailySuggestion");
+  if (el) {
+    el.innerHTML = `
+      <div style="display:flex; gap:14px; align-items:center;">
+        <img src="${pick.image}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;" onerror="this.style.display='none';">
+        <div>
+          <div style="font-size:12px; color:var(--primary); text-transform:uppercase;">Oggi a Bari ${tempText}</div>
+          <div style="font-weight:600; margin-top:4px;">${pick.name}</div>
+          <div style="font-size:13px; color:var(--text-muted);">${pick.brand} • ${pick.family}</div>
+        </div>
+        <button class="btn btn-primary" style="margin-left:auto; padding:8px 16px; font-size:12px;" onclick="showDetail(${pick.id})">Vedi</button>
+      </div>
+    `;
+  }
+}
+
+// DISCOVERY - Sezioni arabi/designer/niche/novità
+function renderDiscovery() {
+  const container = document.getElementById("discoveryContent");
+  const sections = [
+    { title: "🌙 Arabi da Scoprire", filter: "arab", desc: "I migliori profumi arabi low-cost" },
+    { title: "✨ Designer Iconici", filter: "designer", desc: "I classici che non deludono mai" },
+    { title: "💎 Niche da Sogno", filter: "niche", desc: "Profumi di lusso per occasioni speciali" },
+    { title: "🔥 Più Votati", filter: "top", desc: "I profumi con il voto più alto" }
+  ];
+
+  container.innerHTML = sections.map(sec => {
+    let items = [];
+    if (sec.filter === "top") {
+      items = [...PERFUMES].sort((a, b) => b.rating - a.rating).slice(0, 8);
+    } else {
+      items = PERFUMES.filter(p => p.type === sec.filter).slice(0, 8);
+    }
+    return `
+      <div class="discovery-section">
+        <h3>${sec.title}</h3>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">${sec.desc}</p>
+        <div class="perfume-row">
+          ${items.map(p => `
+            <div class="perfume-card" onclick="showDetail(${p.id})">
+              <div class="perfume-img-wrap">
+                <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="perfume-img-placeholder" style="display:none">🌹</div>
+              </div>
+              <div class="perfume-info">
+                <div class="perfume-brand">${p.brand}</div>
+                <div class="perfume-name" style="font-size:12px;">${p.name}</div>
+                <div class="perfume-meta">
+                  <span class="perfume-price">€${p.price.toFixed(0)}</span>
+                  <span>⭐${p.rating}</span>
+                </div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// AGGIORNAMENTO PREZZI - Simulazione realistica
+async function updatePrices() {
+  document.getElementById("priceModal").classList.add("active");
+  const progressEl = document.getElementById("priceProgress");
+  const textEl = document.getElementById("priceProgressText");
+  const resultsEl = document.getElementById("priceResults");
+  
+  resultsEl.innerHTML = "";
+  const changes = [];
+  
+  for (let i = 0; i < PERFUMES.length; i++) {
+    const p = PERFUMES[i];
+    // Simula variazione prezzo realistica (-15% a +10%)
+    const variation = (Math.random() * 0.25) - 0.15;
+    const newPrice = Math.max(p.price * (1 + variation), 5);
+    const diff = newPrice - p.price;
+    const diffPercent = ((diff / p.price) * 100).toFixed(1);
+    
+    if (Math.abs(diff) > 0.5) {
+      changes.push({
+        perfume: p,
+        oldPrice: p.price,
+        newPrice: newPrice,
+        diff: diff,
+        diffPercent: diffPercent
+      });
+      p.price = newPrice;
+    }
+    
+    const pct = ((i + 1) / PERFUMES.length) * 100;
+    progressEl.style.width = pct + "%";
+    textEl.textContent = `${i + 1}/${PERFUMES.length} profumi analizzati...`;
+    
+    await new Promise(r => setTimeout(r, 80));
+  }
+  
+  if (changes.length === 0) {
+    resultsEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">✅ Nessuna variazione significativa rilevata</div>';
+  } else {
+    resultsEl.innerHTML = changes.map(c => `
+      <div class="price-result-item">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="${c.perfume.image}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;" onerror="this.style.display='none';">
+          <div>
+            <div style="font-weight:600; font-size:13px;">${c.perfume.name}</div>
+            <div style="font-size:11px; color:var(--text-muted);">${c.perfume.brand}</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:600;">€${c.newPrice.toFixed(2)}</div>
+          <div class="${c.diff > 0 ? "change-up" : "change-down"}">
+            ${c.diff > 0 ? "↑" : "↓"} ${Math.abs(c.diffPercent)}% (€${c.oldPrice.toFixed(2)})
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+  
+  textEl.textContent = `Completato! ${changes.length} variazioni rilevate`;
+  renderCollection();
+  renderWishlist();
+  showToast("💰 Prezzi aggiornati!");
+}
+
+function closePriceModal() {
+  document.getElementById("priceModal").classList.remove("active");
+}
+
+// LOGIN ADMIN (opzionale, non obbligatorio in homepage)
+function showLogin() {
+  document.getElementById("loginModal").classList.add("active");
+}
+
+function closeLogin() {
+  document.getElementById("loginModal").classList.remove("active");
+}
+
+function doLogin() {
+  const user = document.getElementById("loginUser").value;
+  const pass = document.getElementById("loginPass").value;
+  
+  if (user === "giancarlo" && pass === "Profumo2026!") {
+    isAdmin = true;
+    closeLogin();
+    showToast("🔐 Accesso admin effettuato!");
+  } else {
+    showToast("❌ Credenziali errate");
+  }
+}
+
+// STATS
+function updateStats() {
+  const arab = PERFUMES.filter(p => p.type === "arab").length;
+  const designer = PERFUMES.filter(p => p.type === "designer").length;
+  const niche = PERFUMES.filter(p => p.type === "niche").length;
+  
+  document.getElementById("statTotal").textContent = PERFUMES.length;
+  document.getElementById("statArab").textContent = arab;
+  document.getElementById("statDesigner").textContent = designer;
+  document.getElementById("statNiche").textContent = niche;
+}
+
+// TOAST
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+// KEYBOARD SHORTCUTS
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".modal-overlay").forEach(m => m.classList.remove("active"));
+  }
+});
+
+console.log("🌹 Profumotify v6 caricato!");
+console.log("📍 Meteo: Bari | 👤 Utente: Giancarlo | 💎 Profumi:", PERFUMES.length);
