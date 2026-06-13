@@ -256,7 +256,7 @@ function renderCollection() {
       <div class="perfume-card fade-in ${isWished ? "wishlist-active" : ""}" style="animation-delay:${i*0.03}s" onclick="showDetail(${p.id})">
         <div class="perfume-img-wrap">
           <img src="${p.image}" alt="${p.name}" loading="lazy"
-               onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})"
+               onerror="handleImageError(this, p)"
                onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
           <div class="perfume-img-placeholder" style="display:none">
             <span>🌹</span>
@@ -363,7 +363,7 @@ function renderWishlist() {
     </div>
     ${wished.map(p => `
       <div class="wishlist-item">
-        <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
+        <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="handleImageError(this, p)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
         <div class="placeholder" style="display:none">🌹</div>
         <div class="wishlist-item-info">
           <div class="wishlist-item-brand">${p.brand}</div>
@@ -666,7 +666,7 @@ function renderAdvisorOld() {
       <div style="margin-top:20px;">
         <div style="font-size:12px; color:var(--accent); text-transform:uppercase; margin-bottom:10px;">⭐ Scelta principale</div>
         <div class="advisor-perfume" onclick="showDetail(${pick.id})">
-          <img src="${pick.image}" alt="${pick.name}" onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
+          <img src="${pick.image}" alt="${pick.name}" onerror="handleImageError(this, p)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
           <div class="placeholder" style="display:none">🌹</div>
           <div class="advisor-perfume-info">
             <div class="name">${pick.name}</div>
@@ -684,7 +684,7 @@ function renderAdvisorOld() {
             <div class="perfume-card" style="min-width:140px; flex:1;" onclick="showDetail(${p.id})">
               <div class="perfume-img-wrap" style="aspect-ratio:1;">
                 <img src="${p.image}" alt="${p.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;"
-                  onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})"
+                  onerror="handleImageError(this, p)"
                   onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
                 <div class="perfume-img-placeholder" style="display:none"><span>🌹</span><span class="ph-name">${p.name}</span></div>
               </div>
@@ -720,7 +720,7 @@ function showDetail(id) {
   content.innerHTML = `
     <div class="detail-img">
       <img src="${p.image}" alt="${p.name}"
-        onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})"
+        onerror="handleImageError(this, p)"
         onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
       <div class="placeholder" style="display:none">
         <span>🌹</span>
@@ -1155,96 +1155,20 @@ function generateTimelineData() {
 
 
 function renderDashboard() {
+  renderAdvancedStats();
+  // Aggiungi il consiglio del giorno in fondo
   const container = document.getElementById("dashboardContent");
-  if (!container) return;
-
-  const byType = { arab: 0, designer: 0, niche: 0 };
-  const bySeason = {};
-  const byBrand = {};
-  const byFamily = {};
-  let totalValue = 0;
-  let avgRating = 0;
-
-  perfumeDB.forEach(p => {
-    byType[p.type]++;
-    p.season.forEach(s => { bySeason[s] = (bySeason[s] || 0) + 1; });
-    byBrand[p.brand] = (byBrand[p.brand] || 0) + 1;
-    byFamily[p.olfactoryFamily] = (byFamily[p.olfactoryFamily] || 0) + 1;
-    totalValue += p.price;
-    avgRating += p.rating;
-  });
-
-  avgRating = (avgRating / perfumeDB.length).toFixed(1);
-  const topBrands = Object.entries(byBrand).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const topFamilies = Object.entries(byFamily).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-  container.innerHTML = `
-    <div class="stats-grid" style="margin-bottom:20px;">
-      <div class="stat-card"><div class="number">€${totalValue.toFixed(0)}</div><div class="label">Valore Collezione</div></div>
-      <div class="stat-card"><div class="number">${avgRating}</div><div class="label">Media Voti</div></div>
-      <div class="stat-card"><div class="number">${wishlist.length}</div><div class="label">In Wishlist</div></div>
-      <div class="stat-card"><div class="number">${Object.keys(byBrand).length}</div><div class="label">Brand Diversi</div></div>
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-title">📊 Distribuzione per Tipo</div>
-      <div class="bar-chart">
-        ${Object.entries(byType).map(([type, count]) => {
-          const colors = { arab: "#ff6b9d", designer: "#60a5fa", niche: "#c9a227" };
-          const labels = { arab: "Arabi", designer: "Designer", niche: "Niche" };
-          return `
-            <div class="bar-item">
-              <div class="bar" style="height:${Math.max((count/30)*100, 5)}%; background:${colors[type]};"></div>
-              <div class="bar-label">${labels[type]}<br><strong>${count}</strong></div>
-            </div>
-          `;
-        }).join("")}
+  if (container) {
+    container.innerHTML += `
+      <div class="chart-container">
+        <div class="chart-title">💡 Consiglio del Giorno</div>
+        <div id="dailySuggestion" style="padding:12px; background:var(--bg); border-radius:12px;"></div>
       </div>
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-title">🌡️ Distribuzione per Stagione</div>
-      <div class="bar-chart">
-        ${["Primavera","Estate","Autunno","Inverno"].map(season => {
-          const count = bySeason[season] || 0;
-          const colors = { "Primavera":"#4ade80", "Estate":"#60a5fa", "Autunno":"#fbbf24", "Inverno":"#f87171" };
-          return `
-            <div class="bar-item">
-              <div class="bar" style="height:${Math.max((count/25)*100, 5)}%; background:${colors[season]};"></div>
-              <div class="bar-label">${season}<br><strong>${count}</strong></div>
-            </div>
-          `;
-        }).join("")}
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-title">🏆 Top Brand</div>
-      ${topBrands.map(([brand, count]) => `
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div style="width:${Math.max(count*25, 30)}px; height:24px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; color:#1a1a2e; font-size:12px; font-weight:600;">${count}</div>
-          <span style="font-size:14px;">${brand}</span>
-        </div>
-      `).join("")}
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-title">🎨 Top Famiglie Olfattive</div>
-      ${topFamilies.map(([family, count]) => `
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div style="width:${Math.max(count*25, 30)}px; height:24px; background:var(--info); border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:600;">${count}</div>
-          <span style="font-size:14px;">${family}</span>
-        </div>
-      `).join("")}
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-title">💡 Consiglio del Giorno</div>
-      <div id="dailySuggestion" style="padding:12px; background:var(--bg); border-radius:12px;"></div>
-    </div>
-  `;
-
-  generateDailySuggestion();
+    `;
+    generateDailySuggestion();
+    // Aggiungi badge collezionista
+    container.innerHTML += renderBadges();
+  }
 }
 
 
@@ -1261,7 +1185,7 @@ function generateDailySuggestion() {
     el.innerHTML = `
       <div style="display:flex; gap:14px; align-items:center;">
         <img src="${pick.image}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"
-          onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})"
+          onerror="handleImageError(this, {brand:'${pick.brand}',name:'${pick.name}'})"
           onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
         <div class="placeholder" style="display:none; width:60px; height:60px; border-radius:12px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:24px;">🌹</div>
         <div>
@@ -1373,7 +1297,7 @@ function renderDiscovery() {
               <div class="perfume-card" onclick="showDetail(${p.id})">
                 <div class="perfume-img-wrap">
                   <img src="${p.image}" alt="${p.name}" loading="lazy"
-                    onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})"
+                    onerror="handleImageError(this, p)"
                     onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
                   <div class="perfume-img-placeholder" style="display:none"><span>🌹</span><span class="ph-name">${p.name}</span></div>
                 </div>
@@ -1439,7 +1363,7 @@ async function showPriceUpdate() {
       <div class="price-result-item">
         <div style="display:flex; align-items:center; gap:10px;">
           <img src="${c.perfume.image}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"
-            onerror="handleImageError(this, {brand:'${p.brand}',name:'${p.name}'})"
+            onerror="handleImageError(this, p)"
             onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
           <div class="placeholder" style="display:none; width:40px; height:40px; border-radius:8px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:16px;">🌹</div>
           <div>
