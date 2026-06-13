@@ -1,8 +1,3 @@
-
-window.addEventListener('error', function(e){
-  document.body.innerHTML = '<div style="padding:20px;font-family:sans-serif;background:#111;color:#fff;min-height:100vh"><h2>Profumotify Debug</h2><p>Errore JavaScript:</p><pre style="white-space:pre-wrap;color:#ff8080">'+(e.message||'Errore sconosciuto')+'</pre></div>';
-});
-
 // ============================================================
 // PROFUMOTIFY v8.0 - APP JAVASCRIPT
 // Collezione di Giancarlo - Bari
@@ -48,8 +43,11 @@ function initApp() {
   });
 
   // Registra Service Worker
-  // Service Worker temporarily disabled for debugging
-
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then(r => console.log("SW registrato"))
+      .catch(e => console.log("SW errore:", e));
+  }
 
   fetchMeteoBari();
   renderStats();
@@ -429,7 +427,7 @@ function renderSmartAdvisor() {
       "🍋 Agrumi durano di più col caldo"
     ];
     if (humidity > 65) {
-      reasons.push("💦 Umidità alta: evita note pesanti che "appiccicano"");
+      reasons.push('💦 Umidità alta: evita note pesanti che "appiccicano"');
       layeringSuggestion = { base: "Cool Water", enhancer: "Soul Sea", effect: "Effetto mare raddoppiato" };
     }
   } else if (weatherCondition === "warm") {
@@ -447,7 +445,7 @@ function renderSmartAdvisor() {
   } else if (weatherCondition === "cold") {
     recFamilies = ["Orientale Gourmand", "Orientale Legnoso", "Orientale Speziato"];
     reasons = [
-      "❄️ Freddo intenso: solo profumi "beast mode"",
+      '❄️ Freddo intenso: solo profumi "beast mode"',
       "🍯 Gourmand proiettano meglio sotto il cappotto",
       "🪵 Oud e legni resistono al freddo"
     ];
