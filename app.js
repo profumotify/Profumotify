@@ -1,5 +1,5 @@
 // ============================================================
-// PROFUMOTIFY v8.0 - APP JAVASCRIPT
+// PROFUMOTIFY v10.2 - APP JAVASCRIPT
 // Collezione di Giancarlo - Bari
 // Mobile App + Desktop Responsive
 // Wishlist | Meteo LIVE | Advisor rotazione | Prezzi simulati
@@ -15,8 +15,6 @@ try {
 let currentFilter = "all";
 let searchQuery = "";
 let currentTab = "collection";
-let lastAdvisorIndex = -1;
-let dailyAdvisorSeed = new Date().toDateString();
 
 // ============================================================
 // INIZIALIZZAZIONE
@@ -255,7 +253,7 @@ function renderCollection() {
       <div class="perfume-card fade-in ${isWished ? "wishlist-active" : ""}" style="animation-delay:${i*0.03}s" onclick="showDetail(${p.id})">
         <div class="perfume-img-wrap">
           <img src="${p.image}" alt="${p.name}" loading="lazy"
-               onerror="handleImageError(this, p)"
+               onerror="handleImageError(this)"
                onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
           <div class="perfume-img-placeholder" style="display:none">
             <span>🌹</span>
@@ -279,10 +277,10 @@ function renderCollection() {
   }).join("");
 }
 
-function filterType(type) {
+function filterType(type, btn) {
   currentFilter = type;
   document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
-  event.target.classList.add("active");
+  btn?.classList.add("active");
   renderCollection();
 }
 
@@ -362,7 +360,7 @@ function renderWishlist() {
     </div>
     ${wished.map(p => `
       <div class="wishlist-item">
-        <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="handleImageError(this, p)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
+        <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="handleImageError(this)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
         <div class="placeholder" style="display:none">🌹</div>
         <div class="wishlist-item-info">
           <div class="wishlist-item-brand">${p.brand}</div>
@@ -519,7 +517,7 @@ function renderSmartAdvisor() {
       <div style="margin-top:20px;">
         <div style="font-size:12px; color:var(--accent); text-transform:uppercase; margin-bottom:10px; font-weight:600;">⭐ Scelta Principale</div>
         <div class="advisor-perfume" onclick="showDetail(${pick.id})" style="cursor:pointer;">
-          <img src="${pick.image}" alt="${pick.name}" onerror="handleImageError(this, {image:'',brand:'${pick.brand}',name:'${pick.name}'})" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" style="width:80px; height:80px; border-radius:12px; object-fit:cover;">
+          <img src="${pick.image}" alt="${pick.name}" onerror="handleImageError(this)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" style="width:80px; height:80px; border-radius:12px; object-fit:cover;">
           <div class="placeholder" style="display:none; width:80px; height:80px; border-radius:12px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:32px;">🌹</div>
           <div class="advisor-perfume-info" style="flex:1;">
             <div class="name" style="font-size:18px; font-weight:700;">${pick.name}</div>
@@ -555,7 +553,7 @@ function renderSmartAdvisor() {
             <div class="perfume-card" style="min-width:140px; flex:1; cursor:pointer;" onclick="showDetail(${p.id})">
               <div class="perfume-img-wrap" style="aspect-ratio:1;">
                 <img src="${p.image}" alt="${p.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;"
-                  onerror="handleImageError(this, {image:'',brand:'${p.brand}',name:'${p.name}'})"
+                  onerror="handleImageError(this)"
                   onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
                 <div class="perfume-img-placeholder" style="display:none"><span>🌹</span><span class="ph-name">${p.name}</span></div>
               </div>
@@ -573,7 +571,7 @@ function renderSmartAdvisor() {
         <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; font-weight:600;">🌙 Consiglio per la Serata</div>
         <div class="advisor-perfume" onclick="showDetail(${occasionPick.id})" style="cursor:pointer; background:linear-gradient(135deg, rgba(255,107,157,0.1), transparent); border-color:var(--rose);">
           <img src="${occasionPick.image}" alt="${occasionPick.name}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"
-            onerror="handleImageError(this, {image:'',brand:'${occasionPick.brand}',name:'${occasionPick.name}'})">
+            onerror="handleImageError(this)">
           <div class="advisor-perfume-info">
             <div class="name">${occasionPick.name}</div>
             <div class="brand">${occasionPick.brand} • ${occasionPick.olfactoryFamily}</div>
@@ -614,97 +612,6 @@ function renderAdvisor() {
   renderSmartAdvisor();
 }
 
-// Vecchia funzione mantenuta per compatibilità
-function renderAdvisorOld() {
-  const container = document.getElementById("advisorContent");
-  if (!container) return;
-
-  const season = getCurrentSeason();
-  const tempText = document.getElementById("weatherTemp")?.textContent || "20°C";
-  const temp = parseInt(tempText) || 20;
-
-  // Determina famiglie consigliate
-  let recFamilies = [];
-  if (temp > 25) {
-    recFamilies = ["Aromatico Acquatico", "Citrus Aromatico", "Floreale Acquatico", "Citrus Fruttato"];
-  } else if (temp > 18) {
-    recFamilies = ["Aromatico Fougère", "Floreale Fruttato", "Citrus Aromatico", "Orientale Fruttato"];
-  } else if (temp > 10) {
-    recFamilies = ["Orientale Speziato", "Orientale Legnoso", "Aromatico Legnoso", "Floreale Orientale"];
-  } else {
-    recFamilies = ["Orientale Gourmand", "Orientale Legnoso", "Orientale Speziato", "Floreale Orientale"];
-  }
-
-  // Filtra profumi adatti
-  const suitable = perfumeDB.filter(p =>
-    recFamilies.some(f => p.olfactoryFamily.includes(f)) || p.season.includes(season)
-  );
-
-  // Rotazione: usa seed giornaliero + ultimo indice per varietà
-  const today = new Date().toDateString();
-  let seed = 0;
-  for (let i = 0; i < today.length; i++) seed += today.charCodeAt(i);
-  seed += lastAdvisorIndex + 1;
-
-  const pick = suitable[seed % suitable.length] || suitable[0];
-  lastAdvisorIndex = seed % suitable.length;
-
-  const alt1 = suitable[(seed + 1) % suitable.length] || suitable[0];
-  const alt2 = suitable[(seed + 2) % suitable.length] || suitable[0];
-
-  container.innerHTML = `
-    <div class="advisor-box">
-      <h3>🎯 Consiglio per oggi a Bari</h3>
-      <p style="color:var(--text-muted); font-size:14px; margin-bottom:10px;">
-        Stagione: ${season} • Temp: ${tempText} • Famiglie consigliate:
-      </p>
-      <div class="rec-tags">
-        ${recFamilies.slice(0, 4).map(f => `<span class="rec-tag">${f}</span>`).join("")}
-      </div>
-
-      <div style="margin-top:20px;">
-        <div style="font-size:12px; color:var(--accent); text-transform:uppercase; margin-bottom:10px;">⭐ Scelta principale</div>
-        <div class="advisor-perfume" onclick="showDetail(${pick.id})">
-          <img src="${pick.image}" alt="${pick.name}" onerror="handleImageError(this, p)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
-          <div class="placeholder" style="display:none">🌹</div>
-          <div class="advisor-perfume-info">
-            <div class="name">${pick.name}</div>
-            <div class="brand">${pick.brand} • ${pick.olfactoryFamily}</div>
-            <div class="reason">💡 Perfetto per ${season} a ${tempText}</div>
-          </div>
-          <button class="btn btn-primary" style="padding:8px 16px; font-size:12px;">Vedi</button>
-        </div>
-      </div>
-
-      <div style="margin-top:20px;">
-        <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">🔄 Alternative per varietà</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          ${[alt1, alt2].map(p => `
-            <div class="perfume-card" style="min-width:140px; flex:1;" onclick="showDetail(${p.id})">
-              <div class="perfume-img-wrap" style="aspect-ratio:1;">
-                <img src="${p.image}" alt="${p.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;"
-                  onerror="handleImageError(this, p)"
-                  onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
-                <div class="perfume-img-placeholder" style="display:none"><span>🌹</span><span class="ph-name">${p.name}</span></div>
-              </div>
-              <div class="perfume-info">
-                <div class="perfume-brand">${p.brand}</div>
-                <div class="perfume-name" style="font-size:12px;">${p.name}</div>
-              </div>
-            </div>
-          `).join("")}
-        </div>
-      </div>
-
-      <div style="margin-top:20px; padding:12px; background:var(--bg); border-radius:12px;">
-        <div style="font-size:12px; color:var(--text-muted);">
-          💡 <strong>Perché questo profumo?</strong> L'advisor seleziona automaticamente profumi compatibili con il meteo attuale di Bari. Ogni giorno la scelta cambia per offrirti sempre una novità!
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 // ============================================================
 // DETAIL MODAL
 // ============================================================
@@ -719,7 +626,7 @@ function showDetail(id) {
   content.innerHTML = `
     <div class="detail-img">
       <img src="${p.image}" alt="${p.name}"
-        onerror="handleImageError(this, p)"
+        onerror="handleImageError(this)"
         onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
       <div class="placeholder" style="display:none">
         <span>🌹</span>
@@ -788,18 +695,19 @@ function showDetail(id) {
       </div>
 
       <div class="buy-links">
-        <h4>🛒 Negozi diretti</h4>
+        <h4>🛒 Negozi</h4>
         <div class="buy-buttons">
-          <a href="${p.fragrantica}" target="_blank" class="buy-btn fragrantica">📖 Fragrantica (ID)</a>
-          <a href="${p.notino}" target="_blank" class="buy-btn notino">🛒 Notino</a>
+          <a href="${getFragranticaSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn fragrantica">📖 Fragrantica</a>
+          <a href="${getNotinoSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn notino">🛒 Notino</a>
           <a href="${p.pinalli}" target="_blank" class="buy-btn pinalli">🏪 Pinalli</a>
         </div>
       </div>
       <div class="buy-links">
-        <h4>🔍 Ricerca per nome (se ID non coincide)</h4>
+        <h4>🔗 Link diretto alla scheda (se disponibile)</h4>
+        <p style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Alcuni negozi non permettono link diretti stabili: se il link sotto non funziona, usa la ricerca qui sopra.</p>
         <div class="buy-buttons">
-          <a href="${getFragranticaSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn" style="background:rgba(255,152,0,0.15);border-color:#FF9800;color:#FFB74D;">📖 Cerca "${p.brand} ${p.name}" su Fragrantica</a>
-          <a href="${getNotinoSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn" style="background:rgba(33,150,243,0.15);border-color:#2196F3;color:#64B5F6;">🛒 Cerca su Notino</a>
+          <a href="${p.fragrantica}" target="_blank" class="buy-btn" style="background:rgba(255,152,0,0.15);border-color:#FF9800;color:#FFB74D;">📖 Fragrantica (scheda diretta)</a>
+          <a href="${p.notino}" target="_blank" class="buy-btn" style="background:rgba(33,150,243,0.15);border-color:#2196F3;color:#64B5F6;">🛒 Notino (scheda diretta)</a>
         </div>
       </div>
       <div class="buy-links">
@@ -1184,7 +1092,7 @@ function generateDailySuggestion() {
     el.innerHTML = `
       <div style="display:flex; gap:14px; align-items:center;">
         <img src="${pick.image}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"
-          onerror="handleImageError(this, {brand:'${pick.brand}',name:'${pick.name}'})"
+          onerror="handleImageError(this)"
           onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
         <div class="placeholder" style="display:none; width:60px; height:60px; border-radius:12px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:24px;">🌹</div>
         <div>
@@ -1285,6 +1193,8 @@ function renderDiscovery() {
       items = perfumeDB.filter(p => p.type === sec.filter).slice(0, 8);
     }
 
+    if (items.length === 0) return "";
+
     return `
       <div class="discovery-section">
         <h3>${sec.title}</h3>
@@ -1296,7 +1206,7 @@ function renderDiscovery() {
               <div class="perfume-card" onclick="showDetail(${p.id})">
                 <div class="perfume-img-wrap">
                   <img src="${p.image}" alt="${p.name}" loading="lazy"
-                    onerror="handleImageError(this, p)"
+                    onerror="handleImageError(this)"
                     onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
                   <div class="perfume-img-placeholder" style="display:none"><span>🌹</span><span class="ph-name">${p.name}</span></div>
                 </div>
@@ -1362,7 +1272,7 @@ async function showPriceUpdate() {
       <div class="price-result-item">
         <div style="display:flex; align-items:center; gap:10px;">
           <img src="${c.perfume.image}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"
-            onerror="handleImageError(this, p)"
+            onerror="handleImageError(this)"
             onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
           <div class="placeholder" style="display:none; width:40px; height:40px; border-radius:8px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:16px;">🌹</div>
           <div>
@@ -1508,32 +1418,11 @@ function getPinalliSearchUrl(brand, name) {
 // GESTIONE IMMAGINI MULTIPLE (FIX v8.1)
 // Prova Fragrantica → Notino → Placeholder
 // ============================================================
-function getPerfumeImage(perfume) {
-  // Prima prova l'immagine dal database
-  if (perfume.image && perfume.image.includes('fimgs.net')) {
-    return perfume.image;
-  }
-  // Se non c'è o è invalida, prova Notino
-  const notinoImg = `https://www.notino.it/images/products/120x120/${perfume.brand.toLowerCase().replace(/ /g, '-')}-${perfume.name.toLowerCase().replace(/ /g, '-')}.jpg`;
-  return notinoImg;
-}
-
-function handleImageError(img, perfume) {
-  // Se l'immagine Fragrantica fallisce, prova Notino
-  const notinoUrl = `https://www.notino.it/images/products/120x120/${perfume.brand.toLowerCase().replace(/ /g, '-')}-${perfume.name.toLowerCase().replace(/ /g, '-')}.jpg`;
-  if (img.src !== notinoUrl) {
-    img.src = notinoUrl;
-    img.onerror = () => {
-      // Se anche Notino fallisce, mostra placeholder
-      img.style.display = 'none';
-      const placeholder = img.nextElementSibling;
-      if (placeholder) placeholder.style.display = 'flex';
-    };
-  } else {
-    img.style.display = 'none';
-    const placeholder = img.nextElementSibling;
-    if (placeholder) placeholder.style.display = 'flex';
-  }
+function handleImageError(img) {
+  // La foto originale non è disponibile: mostra il placeholder 🌹
+  img.style.display = 'none';
+  const placeholder = img.nextElementSibling;
+  if (placeholder) placeholder.style.display = 'flex';
 }
 
 
@@ -1680,5 +1569,5 @@ function renderBadges() {
   `;
 }
 
-console.log("🌹 Profumotify v9.0 caricato!");
+console.log("🌹 Profumotify v10.2 caricato!");
 console.log("📍 Meteo: Bari LIVE | 👤 Utente: Giancarlo | 💎 Profumi:", perfumeDB.length);
