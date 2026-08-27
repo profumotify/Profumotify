@@ -1017,3 +1017,9 @@ function getWeatherRecommendation(season, temp, humidity) {
   };
   return recs[season] || recs["Primavera"];
 }
+
+// Export CommonJS per gli script Node (es. controllo prezzi in GitHub Actions).
+// Nel browser `module` non esiste, quindi questo blocco è un no-op.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { perfumeDB, noteCategories, familyStyles, seasonData, bariWeather };
+}

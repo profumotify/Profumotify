@@ -1,0 +1,44 @@
+name: Controllo prezzi profumi
+
+# Nota: il trigger "schedule" di GitHub Actions viene letto solo dalla
+# versione del workflow presente sul branch predefinito del repository
+# (es. main) — finché questo branch non viene mergiato, il cron non
+# scatterà da solo. Il trigger manuale (workflow_dispatch) invece
+# funziona subito, anche su questo branch, per testare.
+on:
+  schedule:
+    - cron: '0 7 * * *' # 07:00 UTC = 09:00 ora legale italiana
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Controlla prezzi e invia alert Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/check-prices.js
+
+      - name: Salva lo storico prezzi aggiornato
+        run: |
+          git config user.name "profumotify-bot"
+          git config user.email "actions@github.com"
+          git add price-history.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Aggiorna storico prezzi $(date -u +%F)"
+            git push
+          else
+            echo "Nessuna variazione nello storico prezzi da salvare."
+          fi
