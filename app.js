@@ -46,7 +46,7 @@ function initApp() {
   // Registra Service Worker
   // Service Worker temporarily disabled in v10.2 for cache stability
 
-  fetchMeteoBari();
+  fetchMeteo();
   renderStats();
   renderCollection();
   renderWishlist();
@@ -80,18 +80,49 @@ function doLogout() {
 }
 
 // ============================================================
-// METEO BARI - LIVE API
+// METEO - POSIZIONE LIVE (con fallback Bari)
 // ============================================================
-async function fetchMeteoBari() {
-  const tempEl = document.getElementById("weatherTemp");
-  const descEl = document.getElementById("weatherDesc");
-  const iconEl = document.getElementById("weatherIcon");
+const BARI_COORDS = { lat: 41.12, lon: 16.87, city: "Bari" };
+
+function getUserLocation() {
+  if (!navigator.geolocation) return Promise.resolve(BARI_COORDS);
+
+  return new Promise(resolve => {
+    const timer = setTimeout(() => resolve(BARI_COORDS), 6000);
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        clearTimeout(timer);
+        const { latitude, longitude } = pos.coords;
+        let city = "La tua posizione";
+        try {
+          const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=it`);
+          if (res.ok) {
+            const geo = await res.json();
+            city = geo.city || geo.locality || geo.principalSubdivision || city;
+          }
+        } catch (e) {
+          console.log("Reverse geocoding fallito:", e.message);
+        }
+        resolve({ lat: latitude, lon: longitude, city });
+      },
+      () => { clearTimeout(timer); resolve(BARI_COORDS); },
+      { timeout: 5000, maximumAge: 600000 }
+    );
+  });
+}
+
+async function fetchMeteo() {
+  const locationEl = document.getElementById("weatherLocationText");
+  if (locationEl) locationEl.textContent = "Rilevamento...";
+
+  const loc = await getUserLocation();
+  if (locationEl) locationEl.textContent = loc.city;
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=41.12&longitude=16.87&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Europe/Rome", {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`, {
       signal: controller.signal,
       headers: { 'Accept': 'application/json' }
     });
@@ -103,9 +134,9 @@ async function fetchMeteoBari() {
 
     if (data && data.current) {
       updateMeteoUI(
-        data.current.temperature_2m, 
-        data.current.relative_humidity_2m, 
-        data.current.weather_code, 
+        data.current.temperature_2m,
+        data.current.relative_humidity_2m,
+        data.current.weather_code,
         data.current.wind_speed_10m,
         false
       );
@@ -114,6 +145,7 @@ async function fetchMeteoBari() {
         humidity: data.current.relative_humidity_2m,
         code: data.current.weather_code,
         wind: data.current.wind_speed_10m,
+        city: loc.city,
         timestamp: Date.now()
       }));
     } else {
@@ -126,6 +158,7 @@ async function fetchMeteoBari() {
       try {
         const data = JSON.parse(cached);
         if (Date.now() - data.timestamp < 3600000) {
+          if (locationEl && data.city) locationEl.textContent = data.city;
           updateMeteoUI(data.temp, data.humidity, data.code, data.wind, true);
           return;
         }
@@ -165,6 +198,10 @@ function getCurrentSeason() {
   if (month >= 6 && month <= 8) return "Estate";
   if (month >= 9 && month <= 11) return "Autunno";
   return "Inverno";
+}
+
+function getWeatherLocationLabel() {
+  return document.getElementById("weatherLocationText")?.textContent || "Bari";
 }
 
 // ============================================================
@@ -499,7 +536,7 @@ function renderSmartAdvisor() {
 
   container.innerHTML = `
     <div class="advisor-box">
-      <h3>🎯 Consiglio Intelligente per Oggi a Bari</h3>
+      <h3>🎯 Consiglio Intelligente per Oggi a ${getWeatherLocationLabel()}</h3>
 
       <div style="background:var(--bg-elevated); border-radius:12px; padding:16px; margin:16px 0;">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
@@ -1096,7 +1133,7 @@ function generateDailySuggestion() {
           onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
         <div class="placeholder" style="display:none; width:60px; height:60px; border-radius:12px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:24px;">🌹</div>
         <div>
-          <div style="font-size:12px; color:var(--accent); text-transform:uppercase;">Oggi a Bari ${tempText} • ${season}</div>
+          <div style="font-size:12px; color:var(--accent); text-transform:uppercase;">Oggi a ${getWeatherLocationLabel()} ${tempText} • ${season}</div>
           <div style="font-weight:600; margin-top:4px;">${pick.name}</div>
           <div style="font-size:13px; color:var(--text-muted);">${pick.brand} • ${pick.olfactoryFamily}</div>
         </div>
@@ -1570,4 +1607,4 @@ function renderBadges() {
 }
 
 console.log("🌹 Profumotify v10.2 caricato!");
-console.log("📍 Meteo: Bari LIVE | 👤 Utente: Giancarlo | 💎 Profumi:", perfumeDB.length);
+console.log("📍 Meteo: posizione live (fallback Bari) | 👤 Utente: Giancarlo | 💎 Profumi:", perfumeDB.length);
