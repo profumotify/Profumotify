@@ -1264,7 +1264,7 @@ function renderDiscovery() {
   }).join("") + `
     <div style="margin-top:30px; padding:20px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; text-align:center;">
       <h3 style="color:var(--accent); margin-bottom:10px;">🌟 Scopri nuove marche</h3>
-      <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Marche arabi da esplorare: Lattafa, Armaf, Al Haramain, Khadlaj, Adyan, Anfar, Zimaya, Asdaaf, Ard Al Zaafaran</p>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Marche arabi da esplorare: Lattafa, Armaf, Al Haramain, Khadlaj, Adyan, Anfar London, Zimaya, Asdaaf, Ard Al Zaafaran</p>
       <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Designer low-cost: Zara, G. Bellini, LPDO, Bentley, Montblanc</p>
       <button class="btn btn-outline" onclick="window.open('https://www.notino.it/profumi/', '_blank')">🔍 Esplora su Notino</button>
     </div>

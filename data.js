@@ -652,7 +652,7 @@ const perfumeDB = [
     description: "Oud e rosa con incenso. Clone di Rose Oud di MFK."
   },
 {
-    id: 35, code: "PF035", name: "Badeig Azul", brand: "Anfar",
+    id: 35, code: "PF035", name: "Bateig Azul", brand: "Anfar London",
     type: "arab",
     concentration: "EDP", gender: "Uomo", year: 2021,
     olfactoryFamily: "Aromatico Acquatico",
@@ -667,11 +667,11 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.99532.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Anfar-London/Bateig-Azul-99532.html",
     notino: "https://www.notino.it/search/?q=Anfar+Bateig+Azul",
-    pinalli: "https://www.pinalli.it/search?q=Anfar+Badeig+Azul",
+    pinalli: "https://www.pinalli.it/search?q=Anfar+London+Bateig+Azul",
     description: "Acquatico blu fresco. Clone di Bleu de Chanel."
   },
 {
-    id: 36, code: "PF036", name: "Rituals Of Anfar Chef-D'Oeuvre", brand: "Anfar",
+    id: 36, code: "PF036", name: "Chef d'Oeuvre", brand: "Anfar London",
     type: "arab",
     concentration: "EDP", gender: "Unisex", year: 2022,
     olfactoryFamily: "Orientale Gourmand",
@@ -685,8 +685,8 @@ const perfumeDB = [
     price: 25.0, size: "100ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.106504.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Anfar-London/Chef-d-Oeuvre-106504.html",
-    notino: "https://www.notino.it/search/?q=Anfar+Rituals+Of+Anfar+Chef+D+Oeuvre",
-    pinalli: "https://www.pinalli.it/search?q=Anfar+Rituals+Of+Anfar",
+    notino: "https://www.notino.it/search/?q=Anfar+London+Chef+d+Oeuvre",
+    pinalli: "https://www.pinalli.it/search?q=Anfar+London+Chef+d+Oeuvre",
     description: "Gourmand intenso con miele. Clone di Angels' Share."
   },
 {
