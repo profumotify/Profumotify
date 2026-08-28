@@ -42,7 +42,6 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Davidoff/Cool-Water-Intense-55266.html",
     notino: "https://www.notino.it/davidoff/davidoff-cool-water-intense-eau-de-parfum-per-uomo-125-ml/",
     pinalli: "https://www.pinalli.it/search?q=Davidoff+Cool+Water+Intense",
-    sensationProfumerie: "https://www.sensationprofumerie.it/davidoff-cool-water-intense-eau-de-parfum-P125437",
     description: "Versione intensa e dolce del classico Cool Water."
   },
 {
@@ -177,7 +176,6 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Azzaro/Wanted-by-Night-49144.html",
     notino: "https://www.notino.it/azzaro/wanted-by-night-eau-de-parfum-per-uomo/",
     pinalli: "https://www.pinalli.it/search?q=Azzaro+Wanted+By+Night",
-    sensationProfumerie: "https://www.sensationprofumerie.it/azzaro-wanted-by-night-eau-de-parfum-P120689",
     description: "Speziato e caldo per la notte. Cannella e incenso."
   },
 {
