@@ -864,7 +864,7 @@ const perfumeDB = [
     rating: 9,
     intensity: 8,
     price: 12.5, size: "100ml",
-    image: "",
+    image: "images/g-bellini-deep.png",
     fragrantica: "https://www.fragrantica.com/search/?q=G.+Bellini+Deep",
     notino: "https://www.notino.it/search/?q=G.+Bellini+Deep",
     pinalli: "https://www.pinalli.it/search?q=G+Bellini+Deep",
