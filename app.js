@@ -47,7 +47,13 @@ function initApp() {
   // Registra Service Worker
   // Service Worker temporarily disabled in v10.2 for cache stability
 
-  loadPriceHistory();
+  loadPriceHistory().then(() => {
+    // I prezzi reali arrivano via fetch dopo il primo render: quando
+    // sono pronti, aggiorna le viste che mostrano un prezzo.
+    renderCollection();
+    renderWishlist();
+    renderDiscovery();
+  });
   fetchMeteo();
   renderStats();
   renderCollection();
@@ -126,6 +132,40 @@ async function loadPriceHistory() {
     console.log("Storico prezzi non disponibile:", e.message);
     priceHistory = {};
   }
+}
+
+// Ultimo prezzo reale rilevato per un profumo, con la tendenza rispetto
+// alla rilevazione precedente ALLA STESSA taglia (per non confondere un
+// cambio di confezione con una variazione di prezzo). Torna null se il
+// profumo non è ancora monitorato.
+function getRealPriceInfo(id) {
+  const hist = priceHistory[id]?.history;
+  if (!hist || hist.length === 0) return null;
+  const last = hist[hist.length - 1];
+  const sameSizeBefore = hist.slice(0, -1).filter(h => h.sizeMl === last.sizeMl);
+  const prev = sameSizeBefore[sameSizeBefore.length - 1] || null;
+  let trend = null;
+  if (prev) {
+    if (last.price < prev.price - 0.005) trend = "down";
+    else if (last.price > prev.price + 0.005) trend = "up";
+    else trend = "same";
+  }
+  return { price: last.price, sizeMl: last.sizeMl, date: last.date, trend };
+}
+
+// Prezzo da mostrare: quello reale se lo conosciamo, altrimenti il
+// prezzo di riferimento statico del database come fallback.
+function getDisplayPrice(p) {
+  const real = getRealPriceInfo(p.id);
+  return real ? real.price : p.price;
+}
+
+function trendTriangle(trend, size) {
+  const s = size || "13px";
+  if (trend === "down") return `<span style="color:#4ade80; font-size:${s};" title="Prezzo sceso dall'ultimo controllo">▼</span>`;
+  if (trend === "up") return `<span style="color:#f87171; font-size:${s};" title="Prezzo salito dall'ultimo controllo">▲</span>`;
+  if (trend === "same") return `<span style="color:#fbbf24; font-size:${s};" title="Prezzo invariato dall'ultimo controllo">●</span>`;
+  return "";
 }
 
 async function fetchMeteo() {
@@ -302,6 +342,8 @@ function renderCollection() {
     const badgeText = p.type === "arab" ? "ARABO" : p.type === "designer" ? "DESIGNER" : "NICHE";
     const stars = "★".repeat(Math.floor(p.rating / 2)) + "☆".repeat(5 - Math.floor(p.rating / 2));
     const placeholderName = encodeURIComponent(p.name.substring(0, 15));
+    const realInfo = getRealPriceInfo(p.id);
+    const cardPrice = realInfo ? realInfo.price : p.price;
 
     return `
       <div class="perfume-card fade-in ${isWished ? "wishlist-active" : ""}" style="animation-delay:${i*0.03}s" onclick="showDetail(${p.id})">
@@ -322,7 +364,7 @@ function renderCollection() {
           <div class="perfume-brand">${p.brand}</div>
           <div class="perfume-name">${p.name}</div>
           <div class="perfume-meta">
-            <span class="perfume-price">€${p.price.toFixed(0)}</span>
+            <span class="perfume-price">€${cardPrice.toFixed(0)} ${realInfo ? trendTriangle(realInfo.trend, "11px") : ""}</span>
             <span class="perfume-rating">${stars.split("").map(s => `<span class="star ${s==="★"?"":"empty"}">${s}</span>`).join("")}</span>
           </div>
         </div>
@@ -412,19 +454,23 @@ function renderWishlist() {
         </div>
       </div>
     </div>
-    ${wished.map(p => `
+    ${wished.map(p => {
+      const realInfo = getRealPriceInfo(p.id);
+      const itemPrice = realInfo ? realInfo.price : p.price;
+      return `
       <div class="wishlist-item">
         <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="handleImageError(this)" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
         <div class="placeholder" style="display:none">🌹</div>
         <div class="wishlist-item-info">
           <div class="wishlist-item-brand">${p.brand}</div>
           <div class="wishlist-item-name">${p.name}</div>
-          <div class="wishlist-item-price">€${p.price.toFixed(0)}</div>
+          <div class="wishlist-item-price">€${itemPrice.toFixed(0)} ${realInfo ? trendTriangle(realInfo.trend, "11px") : ""}</div>
         </div>
         <button class="wishlist-item-remove" onclick="removeFromWishlist(${p.id})" title="Rimuovi">🗑️</button>
         <button class="btn btn-primary" style="padding:8px 16px; font-size:12px; margin-left:8px;" onclick="addToCollectionFromWishlist(${p.id})" title="Sposta in collezione">🎉 Acquistato</button>
       </div>
-    `).join("")}
+    `;
+    }).join("")}
   `;
 }
 
@@ -677,16 +723,16 @@ function showDetail(id) {
   const content = document.getElementById("detailContent");
   const style = familyStyles[p.olfactoryFamily] || { color: "#888", icon: "✨" };
 
-  const realPriceData = priceHistory[id];
-  const realHistory = realPriceData?.history || [];
-  const lastReal = realHistory[realHistory.length - 1];
-  const realPriceSection = lastReal ? `
+  const realInfo = getRealPriceInfo(id);
+  const realHistory = priceHistory[id]?.history || [];
+  const mainPrice = realInfo ? realInfo.price : p.price;
+  const mainPriceMeta = realInfo
+    ? `${realInfo.sizeMl ? realInfo.sizeMl + "ml" : p.size} • aggiornato il ${new Date(realInfo.date).toLocaleDateString("it-IT")}`
+    : `${p.size} • ${p.gender} • prezzo di riferimento (non ancora monitorato)`;
+
+  const realPriceSection = realHistory.length > 0 ? `
       <div class="chart-container" style="margin:0 0 16px;">
-        <div class="chart-title">📈 Prezzo reale su Notino${lastReal.sizeMl ? ` (${lastReal.sizeMl}ml)` : ""}</div>
-        <div style="display:flex; align-items:baseline; gap:10px; margin:8px 0;">
-          <span style="font-size:22px; font-weight:700; color:var(--accent);">€${lastReal.price.toFixed(2)}</span>
-          <span style="font-size:12px; color:var(--text-muted);">rilevato il ${new Date(lastReal.date).toLocaleDateString("it-IT")}</span>
-        </div>
+        <div class="chart-title">📈 Andamento prezzo Notino</div>
         <div id="priceChart-${id}"></div>
         ${realHistory.length === 1
           ? `<p style="color:var(--text-muted); font-size:12px; margin-top:8px;">Primo rilevamento: il grafico si popolerà con i controlli dei prossimi giorni.</p>`
@@ -767,8 +813,8 @@ function showDetail(id) {
       </div>
 
       <div class="detail-price-row">
-        <span class="detail-price">€${p.price.toFixed(0)}</span>
-        <span style="color:var(--text-muted); font-size:13px;">${p.size} • ${p.gender} • prezzo di riferimento</span>
+        <span class="detail-price">€${mainPrice.toFixed(2)}</span> ${realInfo ? trendTriangle(realInfo.trend, "16px") : ""}
+        <span style="color:var(--text-muted); font-size:13px;">${mainPriceMeta}</span>
       </div>
 
       ${realPriceSection}
@@ -1336,6 +1382,8 @@ function renderDiscovery() {
         <div class="perfume-row">
           ${items.map(p => {
             const style = familyStyles[p.olfactoryFamily] || { color: "#888", icon: "✨" };
+            const realInfo = getRealPriceInfo(p.id);
+            const itemPrice = realInfo ? realInfo.price : p.price;
             return `
               <div class="perfume-card" onclick="showDetail(${p.id})">
                 <div class="perfume-img-wrap">
@@ -1348,7 +1396,7 @@ function renderDiscovery() {
                   <div class="perfume-brand">${p.brand}</div>
                   <div class="perfume-name" style="font-size:12px;">${p.name}</div>
                   <div class="perfume-meta">
-                    <span class="perfume-price">€${p.price.toFixed(0)}</span>
+                    <span class="perfume-price">€${itemPrice.toFixed(0)} ${realInfo ? trendTriangle(realInfo.trend, "11px") : ""}</span>
                     <span>⭐${p.rating}</span>
                   </div>
                 </div>
