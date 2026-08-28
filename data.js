@@ -306,9 +306,9 @@ const perfumeDB = [
     rating: 10,
     intensity: 9,
     price: 25.0, size: "100ml",
-    image: "",
+    image: "https://cdn.notinoimg.com/order_2k/adyan/6292257642841_01-o/dalia-rouge___250115.jpg",
     fragrantica: "https://www.fragrantica.com/search/?q=Adyan+Dalia+Rouge+Extrait",
-    notino: "https://www.notino.it/search/?q=Adyan+Dalia+Rouge+Extrait",
+    notino: "https://www.notino.it/adyan/dalia-rouge-eau-de-parfum-unisex/p-16291311",
     pinalli: "https://www.pinalli.it/search?q=Adyan+Dalia+Rouge",
     description: "Gourmand intenso con mandorla e zafferano. Clone di BR540."
   },
