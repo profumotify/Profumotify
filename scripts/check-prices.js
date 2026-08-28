@@ -192,29 +192,35 @@ async function main() {
       // Confrontiamo con lo storico solo se la taglia rilevata è la
       // stessa dell'ultima volta: altrimenti un "calo" potrebbe essere
       // solo perché oggi risulta in vendita una confezione più piccola.
-      if (prev && prev.sizeMl === matchedMl) {
-        const diff = price - prev.price;
-        const diffPct = (diff / prev.price) * 100;
+      // La serie storica invece tiene tutti i punti (anche a taglie
+      // diverse), serve per il grafico nella scheda del profumo.
+      const series = prev?.history ? [...prev.history] : [];
+      const sameSizeEntries = series.filter(h => h.sizeMl === matchedMl);
+      const lastSameSize = sameSizeEntries[sameSizeEntries.length - 1];
+
+      if (lastSameSize) {
+        const diff = price - lastSameSize.price;
+        const diffPct = (diff / lastSameSize.price) * 100;
         if (diff < 0 && Math.abs(diffPct) >= DROP_THRESHOLD_PCT) {
           alerts.push(
             `📉 <b>${p.brand} ${p.name}</b> (${matchedMl ?? '?'}ml)\n` +
-            `${prev.price.toFixed(2)}€ → <b>${price.toFixed(2)}€</b> (${diffPct.toFixed(0)}%)\n` +
+            `${lastSameSize.price.toFixed(2)}€ → <b>${price.toFixed(2)}€</b> (${diffPct.toFixed(0)}%)\n` +
             `${p.notino}`
           );
         }
-        const lowest = Math.min(prev.lowest, price);
-        if (lowest < prev.lowest) {
+        const lowestSoFar = Math.min(...sameSizeEntries.map(h => h.price));
+        if (price < lowestSoFar) {
           alerts.push(
             `🏆 <b>${p.brand} ${p.name}</b> (${matchedMl ?? '?'}ml) è al minimo storico: <b>${price.toFixed(2)}€</b>\n${p.notino}`
           );
         }
-        history[p.id] = { price, lowest, currency, sizeMl: matchedMl, lastChecked: today };
-      } else {
-        // Prima rilevazione, o la taglia rilevata è cambiata rispetto
-        // all'ultima volta: salviamo il prezzo come nuovo riferimento,
-        // senza generare un alert di calo (non è un confronto valido).
-        history[p.id] = { price, lowest: price, currency, sizeMl: matchedMl, lastChecked: today };
       }
+
+      const todayIdx = series.findIndex(h => h.date === today);
+      const entry = { date: today, price, sizeMl: matchedMl };
+      if (todayIdx >= 0) series[todayIdx] = entry; else series.push(entry);
+
+      history[p.id] = { currency, history: series.slice(-180) };
     } catch (e) {
       errors.push(`${p.brand} ${p.name}: ${e.message}`);
     }

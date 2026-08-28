@@ -15,6 +15,7 @@ try {
 let currentFilter = "all";
 let searchQuery = "";
 let currentTab = "collection";
+let priceHistory = {}; // popolato da price-history.json (prezzi reali Notino, aggiornati dalla GitHub Action giornaliera)
 
 // ============================================================
 // INIZIALIZZAZIONE
@@ -46,6 +47,7 @@ function initApp() {
   // Registra Service Worker
   // Service Worker temporarily disabled in v10.2 for cache stability
 
+  loadPriceHistory();
   fetchMeteo();
   renderStats();
   renderCollection();
@@ -109,6 +111,21 @@ function getUserLocation() {
       { timeout: 5000, maximumAge: 600000 }
     );
   });
+}
+
+// ============================================================
+// STORICO PREZZI REALI (price-history.json, generato dalla
+// GitHub Action scripts/check-prices.js una volta al giorno)
+// ============================================================
+async function loadPriceHistory() {
+  try {
+    const res = await fetch("price-history.json?t=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    priceHistory = await res.json();
+  } catch (e) {
+    console.log("Storico prezzi non disponibile:", e.message);
+    priceHistory = {};
+  }
 }
 
 async function fetchMeteo() {
@@ -660,6 +677,29 @@ function showDetail(id) {
   const content = document.getElementById("detailContent");
   const style = familyStyles[p.olfactoryFamily] || { color: "#888", icon: "✨" };
 
+  const realPriceData = priceHistory[id];
+  const realHistory = realPriceData?.history || [];
+  const lastReal = realHistory[realHistory.length - 1];
+  const realPriceSection = lastReal ? `
+      <div class="chart-container" style="margin:0 0 16px;">
+        <div class="chart-title">📈 Prezzo reale su Notino${lastReal.sizeMl ? ` (${lastReal.sizeMl}ml)` : ""}</div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin:8px 0;">
+          <span style="font-size:22px; font-weight:700; color:var(--accent);">€${lastReal.price.toFixed(2)}</span>
+          <span style="font-size:12px; color:var(--text-muted);">rilevato il ${new Date(lastReal.date).toLocaleDateString("it-IT")}</span>
+        </div>
+        <div id="priceChart-${id}"></div>
+        ${realHistory.length === 1
+          ? `<p style="color:var(--text-muted); font-size:12px; margin-top:8px;">Primo rilevamento: il grafico si popolerà con i controlli dei prossimi giorni.</p>`
+          : `<p style="color:var(--text-muted); font-size:12px; margin-top:8px;">Minimo storico: €${Math.min(...realHistory.map(h => h.price)).toFixed(2)} • ${realHistory.length} rilevazioni</p>`
+        }
+      </div>
+    ` : `
+      <div class="chart-container" style="margin:0 0 16px; border-color:var(--border);">
+        <div class="chart-title">📈 Prezzo reale su Notino</div>
+        <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">Non ancora monitorato in automatico per questo profumo (serve un link Notino diretto confermato).</p>
+      </div>
+    `;
+
   content.innerHTML = `
     <div class="detail-img">
       <img src="${p.image}" alt="${p.name}"
@@ -728,23 +768,21 @@ function showDetail(id) {
 
       <div class="detail-price-row">
         <span class="detail-price">€${p.price.toFixed(0)}</span>
-        <span style="color:var(--text-muted); font-size:13px;">${p.size} • ${p.gender}</span>
+        <span style="color:var(--text-muted); font-size:13px;">${p.size} • ${p.gender} • prezzo di riferimento</span>
       </div>
+
+      ${realPriceSection}
 
       <div class="buy-links">
         <h4>🛒 Negozi</h4>
         <div class="buy-buttons">
-          <a href="${getFragranticaSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn fragrantica">📖 Fragrantica</a>
-          <a href="${getNotinoSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn notino">🛒 Notino</a>
-          <a href="${p.pinalli}" target="_blank" class="buy-btn pinalli">🏪 Pinalli</a>
+          <a href="${p.fragrantica}" target="_blank" class="buy-btn fragrantica">📖 Fragrantica</a>
+          <a href="${p.notino}" target="_blank" class="buy-btn notino">🛒 Notino</a>
+          <a href="${p.pinalli}" target="_blank" class="buy-btn pinalli">🏪 Pinalli (ricerca)</a>
         </div>
-      </div>
-      <div class="buy-links">
-        <h4>🔗 Link diretto alla scheda (se disponibile)</h4>
-        <p style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Alcuni negozi non permettono link diretti stabili: se il link sotto non funziona, usa la ricerca qui sopra.</p>
-        <div class="buy-buttons">
-          <a href="${p.fragrantica}" target="_blank" class="buy-btn" style="background:rgba(255,152,0,0.15);border-color:#FF9800;color:#FFB74D;">📖 Fragrantica (scheda diretta)</a>
-          <a href="${p.notino}" target="_blank" class="buy-btn" style="background:rgba(33,150,243,0.15);border-color:#2196F3;color:#64B5F6;">🛒 Notino (scheda diretta)</a>
+        <div class="buy-buttons" style="margin-top:8px;">
+          <a href="${getFragranticaSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn" style="padding:6px 12px; font-size:11px; opacity:0.75;">🔍 Se il link Fragrantica non è quello giusto, cerca</a>
+          <a href="${getNotinoSearchUrl(p.brand, p.name)}" target="_blank" class="buy-btn" style="padding:6px 12px; font-size:11px; opacity:0.75;">🔍 Se il link Notino non è quello giusto, cerca</a>
         </div>
       </div>
       <div class="buy-links">
@@ -763,6 +801,8 @@ function showDetail(id) {
       </div>
     </div>
   `;
+
+  if (realHistory.length > 0) drawPriceChart(`priceChart-${id}`, realHistory);
 
   document.getElementById("detailModal").classList.add("active");
   document.body.style.overflow = "hidden";
@@ -1085,6 +1125,63 @@ function drawRadarChart(id, values) {
   dataPolygon.setAttribute("stroke", "var(--accent)");
   dataPolygon.setAttribute("stroke-width", "2");
   svg.appendChild(dataPolygon);
+
+  container.appendChild(svg);
+}
+
+// Grafico a linea dell'andamento prezzi reali di un profumo (history:
+// [{date, price, sizeMl}, ...] da price-history.json, in ordine cronologico).
+function drawPriceChart(id, history) {
+  const container = document.getElementById(id);
+  if (!container || !history || history.length === 0) return;
+
+  const W = 280, H = 90, PAD = 10;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.width = "100%";
+  svg.style.height = "90px";
+
+  if (history.length === 1) {
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", W / 2);
+    dot.setAttribute("cy", H / 2);
+    dot.setAttribute("r", 4);
+    dot.setAttribute("fill", "var(--accent)");
+    svg.appendChild(dot);
+    container.appendChild(svg);
+    return;
+  }
+
+  const prices = history.map(h => h.price);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max - min || 1;
+
+  const points = history.map((h, i) => {
+    const x = PAD + (i / (history.length - 1)) * (W - PAD * 2);
+    const y = H - PAD - ((h.price - min) / range) * (H - PAD * 2);
+    return [x, y];
+  });
+
+  const area = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  area.setAttribute("points", `${PAD},${H - PAD} ` + points.map(pt => pt.join(",")).join(" ") + ` ${W - PAD},${H - PAD}`);
+  area.setAttribute("fill", "rgba(201,162,39,0.15)");
+  svg.appendChild(area);
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  line.setAttribute("points", points.map(pt => pt.join(",")).join(" "));
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", "var(--accent)");
+  line.setAttribute("stroke-width", "2");
+  svg.appendChild(line);
+
+  const [lastX, lastY] = points[points.length - 1];
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  dot.setAttribute("cx", lastX);
+  dot.setAttribute("cy", lastY);
+  dot.setAttribute("r", 3);
+  dot.setAttribute("fill", "var(--accent)");
+  svg.appendChild(dot);
 
   container.appendChild(svg);
 }

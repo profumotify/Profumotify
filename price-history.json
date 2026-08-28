@@ -1,142 +1,202 @@
 {
   "2": {
-    "price": 36.5,
-    "lowest": 36.5,
     "currency": "EUR",
-    "sizeMl": 125,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 36.5,
+        "sizeMl": 125
+      }
+    ]
   },
   "3": {
-    "price": 58.65,
-    "lowest": 58.65,
     "currency": "EUR",
-    "sizeMl": 125,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 58.65,
+        "sizeMl": 125
+      }
+    ]
   },
   "5": {
-    "price": 22.9,
-    "lowest": 22.9,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 22.9,
+        "sizeMl": 100
+      }
+    ]
   },
   "7": {
-    "price": 120,
-    "lowest": 120,
     "currency": "EUR",
-    "sizeMl": 200,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 120,
+        "sizeMl": 200
+      }
+    ]
   },
   "8": {
-    "price": 71.4,
-    "lowest": 71.4,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 71.4,
+        "sizeMl": 100
+      }
+    ]
   },
   "9": {
-    "price": 74.5,
-    "lowest": 74.5,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 74.5,
+        "sizeMl": 100
+      }
+    ]
   },
   "11": {
-    "price": 15.5,
-    "lowest": 15.5,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 15.5,
+        "sizeMl": 100
+      }
+    ]
   },
   "12": {
-    "price": 20.5,
-    "lowest": 20.5,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 20.5,
+        "sizeMl": 100
+      }
+    ]
   },
   "15": {
-    "price": 15.9,
-    "lowest": 15.9,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 15.9,
+        "sizeMl": 100
+      }
+    ]
   },
   "18": {
-    "price": 30.9,
-    "lowest": 30.9,
     "currency": "EUR",
-    "sizeMl": 105,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 30.9,
+        "sizeMl": 105
+      }
+    ]
   },
   "19": {
-    "price": 20.2,
-    "lowest": 20.2,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 20.2,
+        "sizeMl": 100
+      }
+    ]
   },
   "21": {
-    "price": 32.3,
-    "lowest": 32.3,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 32.3,
+        "sizeMl": 100
+      }
+    ]
   },
   "22": {
-    "price": 22.9,
-    "lowest": 22.9,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 22.9,
+        "sizeMl": 100
+      }
+    ]
   },
   "30": {
-    "price": 22.86,
-    "lowest": 22.86,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 22.86,
+        "sizeMl": 100
+      }
+    ]
   },
   "32": {
-    "price": 17.76,
-    "lowest": 17.76,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 17.76,
+        "sizeMl": 100
+      }
+    ]
   },
   "33": {
-    "price": 13.51,
-    "lowest": 13.51,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 13.51,
+        "sizeMl": 100
+      }
+    ]
   },
   "34": {
-    "price": 30.17,
-    "lowest": 30.17,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 30.17,
+        "sizeMl": 100
+      }
+    ]
   },
   "46": {
-    "price": 29.5,
-    "lowest": 29.5,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 29.5,
+        "sizeMl": 100
+      }
+    ]
   },
   "47": {
-    "price": 34.76,
-    "lowest": 34.76,
     "currency": "EUR",
-    "sizeMl": 200,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 34.76,
+        "sizeMl": 200
+      }
+    ]
   },
   "49": {
-    "price": 9.3,
-    "lowest": 9.3,
     "currency": "EUR",
-    "sizeMl": 100,
-    "lastChecked": "2026-08-28"
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 9.3,
+        "sizeMl": 100
+      }
+    ]
   }
 }
