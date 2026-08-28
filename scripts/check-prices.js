@@ -37,12 +37,49 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Estrae prezzo e valuta da una pagina prodotto. Prova prima i dati
-// strutturati JSON-LD (schema.org Product/Offer, lo standard che i
-// grandi e-commerce usano per la SEO ed è molto più stabile di uno
-// scraping basato su classi CSS), poi qualche meta tag comune come
-// fallback.
-function extractPrice(html) {
+// Il campo "size" in data.js è tipo "105ml" — estrae il numero.
+function parseSizeMl(sizeStr) {
+  const m = (sizeStr || '').match(/(\d+(?:[.,]\d+)?)\s*ml/i);
+  return m ? parseFloat(m[1].replace(',', '.')) : null;
+}
+
+// Notino elenca ogni formato (10ml, 30ml, 105ml...) come un'Offer
+// separata nello stesso array "offers" — senza scegliere in base alla
+// taglia, si rischia di prendere il prezzo di una confezione diversa
+// da quella che teniamo in collezione. Sceglie, in ordine: la taglia
+// esatta; altrimenti la più vicina per eccesso; altrimenti la più
+// grande disponibile sotto la taglia target. Preferisce le offerte
+// disponibili (InStock) quando ce n'è scelta.
+function pickOffer(offers, targetMl) {
+  const parsed = offers
+    .map(o => ({ ...o, ml: parseSizeMl(o.name), price: parseFloat(o.price ?? o.lowPrice) }))
+    .filter(o => o.ml != null && !isNaN(o.price));
+
+  if (parsed.length === 0) return null;
+  if (targetMl == null) return parsed[0];
+
+  const inStock = parsed.filter(o => !o.availability || /InStock/i.test(o.availability));
+  const pool = inStock.length > 0 ? inStock : parsed;
+
+  const exact = pool.find(o => o.ml === targetMl);
+  if (exact) return exact;
+
+  const bigger = pool.filter(o => o.ml > targetMl).sort((a, b) => a.ml - b.ml);
+  if (bigger.length > 0) return bigger[0];
+
+  const smaller = pool.filter(o => o.ml < targetMl).sort((a, b) => b.ml - a.ml);
+  if (smaller.length > 0) return smaller[0];
+
+  return pool[0];
+}
+
+// Estrae prezzo e valuta da una pagina prodotto, per la confezione da
+// targetMl millilitri. Prova prima i dati strutturati JSON-LD
+// (schema.org Product/Offer, lo standard che i grandi e-commerce
+// usano per la SEO ed è molto più stabile di uno scraping basato su
+// classi CSS), poi qualche meta tag comune come fallback (che però
+// non permette di scegliere la taglia).
+function extractPrice(html, targetMl) {
   const ldMatches = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
   for (const m of ldMatches) {
     try {
@@ -51,10 +88,18 @@ function extractPrice(html) {
       for (const item of candidates) {
         const offer = item.offers;
         if (!offer) continue;
-        const o = Array.isArray(offer) ? offer[0] : offer;
+        const offerList = Array.isArray(offer) ? offer : [offer];
+
+        const picked = pickOffer(offerList, targetMl);
+        if (picked) {
+          return { price: picked.price, currency: picked.priceCurrency || 'EUR', matchedMl: picked.ml };
+        }
+        // Nessuna offerta ha una taglia riconoscibile nel nome: unico
+        // prezzo disponibile, non possiamo scegliere per taglia.
+        const o = offerList[0];
         const price = parseFloat(o.price ?? o.lowPrice);
         if (!isNaN(price)) {
-          return { price, currency: o.priceCurrency || 'EUR' };
+          return { price, currency: o.priceCurrency || 'EUR', matchedMl: null };
         }
       }
     } catch {
@@ -64,7 +109,7 @@ function extractPrice(html) {
 
   const metaPrice = html.match(/<meta[^>]+(?:property|itemprop)=["'](?:product:price:amount|price)["'][^>]+content=["']([\d.,]+)["']/i);
   if (metaPrice) {
-    return { price: parseFloat(metaPrice[1].replace(',', '.')), currency: 'EUR' };
+    return { price: parseFloat(metaPrice[1].replace(',', '.')), currency: 'EUR', matchedMl: null };
   }
 
   throw new Error('Prezzo non trovato nella pagina (struttura HTML cambiata?)');
@@ -84,7 +129,7 @@ async function closeBrowser() {
   if (browserPromise) await (await browserPromise).close();
 }
 
-async function fetchPrice(url) {
+async function fetchPrice(url, targetMl) {
   const browser = await getBrowser();
   const context = await browser.newContext({
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
@@ -98,7 +143,7 @@ async function fetchPrice(url) {
     // Lascia respirare eventuale JS della pagina che popola il prezzo
     await page.waitForTimeout(1500);
     const html = await page.content();
-    return extractPrice(html);
+    return extractPrice(html, targetMl);
   } finally {
     await context.close();
   }
@@ -135,16 +180,24 @@ async function main() {
   const errors = [];
 
   for (const p of trackable) {
+    const targetMl = parseSizeMl(p.size);
     try {
-      const { price, currency } = await fetchPrice(p.notino);
+      const { price, currency, matchedMl } = await fetchPrice(p.notino, targetMl);
       const prev = history[p.id];
 
-      if (prev) {
+      if (targetMl != null && matchedMl != null && matchedMl !== targetMl) {
+        console.log(`⚠️ ${p.brand} ${p.name}: in collezione è ${p.size}, ma su Notino oggi è disponibile solo la confezione da ${matchedMl}ml — uso quella.`);
+      }
+
+      // Confrontiamo con lo storico solo se la taglia rilevata è la
+      // stessa dell'ultima volta: altrimenti un "calo" potrebbe essere
+      // solo perché oggi risulta in vendita una confezione più piccola.
+      if (prev && prev.sizeMl === matchedMl) {
         const diff = price - prev.price;
         const diffPct = (diff / prev.price) * 100;
         if (diff < 0 && Math.abs(diffPct) >= DROP_THRESHOLD_PCT) {
           alerts.push(
-            `📉 <b>${p.brand} ${p.name}</b>\n` +
+            `📉 <b>${p.brand} ${p.name}</b> (${matchedMl ?? '?'}ml)\n` +
             `${prev.price.toFixed(2)}€ → <b>${price.toFixed(2)}€</b> (${diffPct.toFixed(0)}%)\n` +
             `${p.notino}`
           );
@@ -152,14 +205,15 @@ async function main() {
         const lowest = Math.min(prev.lowest, price);
         if (lowest < prev.lowest) {
           alerts.push(
-            `🏆 <b>${p.brand} ${p.name}</b> è al minimo storico: <b>${price.toFixed(2)}€</b>\n${p.notino}`
+            `🏆 <b>${p.brand} ${p.name}</b> (${matchedMl ?? '?'}ml) è al minimo storico: <b>${price.toFixed(2)}€</b>\n${p.notino}`
           );
         }
-        history[p.id] = { price, lowest, currency, lastChecked: today };
+        history[p.id] = { price, lowest, currency, sizeMl: matchedMl, lastChecked: today };
       } else {
-        // Prima rilevazione per questo profumo: salviamo il prezzo come
-        // riferimento, senza generare un alert (non è un "calo" reale).
-        history[p.id] = { price, lowest: price, currency, lastChecked: today };
+        // Prima rilevazione, o la taglia rilevata è cambiata rispetto
+        // all'ultima volta: salviamo il prezzo come nuovo riferimento,
+        // senza generare un alert di calo (non è un confronto valido).
+        history[p.id] = { price, lowest: price, currency, sizeMl: matchedMl, lastChecked: today };
       }
     } catch (e) {
       errors.push(`${p.brand} ${p.name}: ${e.message}`);
