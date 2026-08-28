@@ -20,8 +20,8 @@ const perfumeDB = [
     price: 30.0, size: "125ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.507.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Davidoff/Cool-Water-507.html",
-    notino: "https://www.notino.it/davidoff/cool-water-man/",
-    pinalli: "https://www.pinalli.it/search?q=Davidoff+Cool+Water",
+    notino: "https://www.notino.it/davidoff/cool-water-eau-de-toilette-eau-de-toilette-per-uomo/p-16378998",
+    pinalli: "https://www.pinalli.it/products/profumi-cool-water-1bey00cws3",
     description: "Icona marina fresca e pulita. Il profumo dell'oceano."
   },
 {
