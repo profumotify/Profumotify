@@ -1,0 +1,11 @@
+{
+  "name": "profumotify-price-check",
+  "private": true,
+  "description": "Script di controllo prezzi per la GitHub Action di Profumotify",
+  "scripts": {
+    "check-prices": "node scripts/check-prices.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

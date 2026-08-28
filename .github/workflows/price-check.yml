@@ -25,6 +25,12 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Installa le dipendenze
+        run: npm install
+
+      - name: Installa Chromium per Playwright
+        run: npx playwright install --with-deps chromium
+
       - name: Controlla prezzi e invia alert Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

@@ -12,6 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { chromium } = require('playwright');
 const { perfumeDB } = require('../data.js');
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -69,16 +70,38 @@ function extractPrice(html) {
   throw new Error('Prezzo non trovato nella pagina (struttura HTML cambiata?)');
 }
 
+// Una richiesta HTTP "nuda" (senza JS, senza fingerprint da browser vero)
+// viene bloccata con un 403 dalla protezione anti-bot di Notino prima
+// ancora di arrivare all'HTML. Usiamo quindi un vero browser headless:
+// più lento, ma molto più simile a una visita reale.
+let browserPromise = null;
+function getBrowser() {
+  if (!browserPromise) browserPromise = chromium.launch();
+  return browserPromise;
+}
+
+async function closeBrowser() {
+  if (browserPromise) await (await browserPromise).close();
+}
+
 async function fetchPrice(url) {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-      'Accept-Language': 'it-IT,it;q=0.9'
-    }
+  const browser = await getBrowser();
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+    locale: 'it-IT'
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
-  return extractPrice(html);
+  try {
+    const page = await context.newPage();
+    const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    if (!res) throw new Error('Nessuna risposta dalla pagina');
+    if (!res.ok()) throw new Error(`HTTP ${res.status()}`);
+    // Lascia respirare eventuale JS della pagina che popola il prezzo
+    await page.waitForTimeout(1500);
+    const html = await page.content();
+    return extractPrice(html);
+  } finally {
+    await context.close();
+  }
 }
 
 async function sendTelegram(text) {
@@ -144,6 +167,7 @@ async function main() {
     await sleep(REQUEST_DELAY_MS);
   }
 
+  await closeBrowser();
   saveHistory(history);
 
   if (alerts.length > 0) {
@@ -160,7 +184,8 @@ async function main() {
   }
 }
 
-main().catch(e => {
+main().catch(async e => {
   console.error('Errore fatale:', e);
+  await closeBrowser().catch(() => {});
   process.exit(1);
 });
