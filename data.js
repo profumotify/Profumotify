@@ -22,6 +22,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Davidoff/Cool-Water-507.html",
     notino: "https://www.notino.it/davidoff/cool-water-eau-de-toilette-eau-de-toilette-per-uomo/p-16378998",
     pinalli: "https://www.pinalli.it/products/profumi-cool-water-1bey00cws3",
+    sensationProfumerie: "https://www.sensationprofumerie.it/davidoff-cool-water-eau-de-toilette-PDAV00057",
     description: "Icona marina fresca e pulita. Il profumo dell'oceano."
   },
 {
@@ -41,6 +42,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Davidoff/Cool-Water-Intense-55266.html",
     notino: "https://www.notino.it/davidoff/davidoff-cool-water-intense-eau-de-parfum-per-uomo-125-ml/",
     pinalli: "https://www.pinalli.it/search?q=Davidoff+Cool+Water+Intense",
+    sensationProfumerie: "https://www.sensationprofumerie.it/davidoff-cool-water-intense-eau-de-parfum-P125437",
     description: "Versione intensa e dolce del classico Cool Water."
   },
 {
@@ -154,7 +156,8 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.16657.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Versace/Eros-16657.html",
     notino: "https://www.notino.it/versace/eros-eau-de-toilette-per-uomo/",
-    pinalli: "https://www.pinalli.it/search?q=Versace+Eros",
+    pinalli: "https://www.pinalli.it/products/profumi-eros-1vry00ers2",
+    sensationProfumerie: "https://www.sensationprofumerie.it/versace-eros-eau-de-toilette-PVER380921",
     description: "Potente e seducente. Menta, mela e vaniglia. Clubbing."
   },
 {
@@ -174,6 +177,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Azzaro/Wanted-by-Night-49144.html",
     notino: "https://www.notino.it/azzaro/wanted-by-night-eau-de-parfum-per-uomo/",
     pinalli: "https://www.pinalli.it/search?q=Azzaro+Wanted+By+Night",
+    sensationProfumerie: "https://www.sensationprofumerie.it/azzaro-wanted-by-night-eau-de-parfum-P120689",
     description: "Speziato e caldo per la notte. Cannella e incenso."
   },
 {
@@ -248,7 +252,7 @@ const perfumeDB = [
     price: 16.0, size: "100ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.134606.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Hayatim-134606.html",
-    notino: "https://www.notino.it/search/?q=Lattafa+Hayatim",
+    notino: "https://www.notino.it/lattafa/hayaatim-eau-de-parfum-unisex/",
     pinalli: "https://www.pinalli.it/search?q=Lattafa+Hayaatim",
     description: "Fresco floreale-fruttato. Clone di Versace Dylan Blue."
   },
@@ -288,6 +292,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Opulent-Oud-66012.html",
     notino: "https://www.notino.it/lattafa/opulent-oud-eau-de-parfum-unisex/",
     pinalli: "https://www.pinalli.it/search?q=Lattafa+Opulent+Oud",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lattafa-opulent-oud-eau-de-parfum-P168054",
     description: "Oud opulento e speziato. Clone di Tom Ford Oud Wood."
   },
 {
@@ -344,7 +349,7 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.64105.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Armaf/Club-de-Nuit-Sillage-64105.html",
     notino: "https://www.notino.it/armaf/club-de-nuit-sillage-eau-de-parfum-per-uomo/",
-    pinalli: "https://www.pinalli.it/search?q=Armaf+Club+de+Nuit+Sillage",
+    pinalli: "https://www.pinalli.it/products/profumi-club-de-nuit-sillage-unisex-2af0000000006",
     description: "Clone di Silver Mountain Water di Creed. Fresco e floreale."
   },
 {
@@ -420,7 +425,7 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.78382.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Mohra-78382.html",
     notino: "https://www.notino.it/lattafa/mohra-eau-de-parfum-unisex/",
-    pinalli: "https://www.pinalli.it/search?q=Lattafa+Mohra",
+    pinalli: "https://www.pinalli.it/products/profumi-mohra-men-2lf0000000025",
     description: "Speziato-oud intenso. Clone di Tom Ford Tuscan Leather."
   },
 {
@@ -438,8 +443,9 @@ const perfumeDB = [
     price: 16.0, size: "100ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.67996.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Qaed-Al-Fursan-67996.html",
-    notino: "https://www.notino.it/search/?q=Lattafa+Qaed+Al+Fursan",
-    pinalli: "https://www.pinalli.it/search?q=Lattafa+Qaed+Al+Fursan",
+    notino: "https://www.notino.it/lattafa/oaed-al-fursan-eau-de-parfum-unisex/",
+    pinalli: "https://www.pinalli.it/products/profumi-qaed-al-fursan-men-2lf0000000033",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lattafa-qaed-al-fursan-eau-de-parfum-P168055",
     description: "Fruttato intenso con birke. Clone di Creed Aventus."
   },
 {
@@ -515,7 +521,7 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.99586.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Teriaq-Intense-99586.html",
     notino: "https://www.notino.it/search/?q=Lattafa+Teriaq+Intense",
-    pinalli: "https://www.pinalli.it/search?q=Lattafa+Teriaq+Intense",
+    pinalli: "https://www.pinalli.it/products/profumi-teriaq-intense-unisex-2lf0000000036",
     description: "Gourmand dolce e intenso. Clone di Angels' Share di Kilian."
   },
 {
@@ -649,6 +655,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Petra-107089.html",
     notino: "https://www.notino.it/lattafa/petra-eau-de-parfum-unisex/",
     pinalli: "https://www.pinalli.it/search?q=Lattafa+Petra",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lattafa-petra-eau-de-parfum-P171714",
     description: "Oud e rosa con incenso. Clone di Rose Oud di MFK."
   },
 {
@@ -666,7 +673,7 @@ const perfumeDB = [
     price: 20.0, size: "100ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.99532.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Anfar-London/Bateig-Azul-99532.html",
-    notino: "https://www.notino.it/search/?q=Anfar+Bateig+Azul",
+    notino: "https://www.notino.it/anfar/bateig-azul/",
     pinalli: "https://www.pinalli.it/search?q=Anfar+London+Bateig+Azul",
     description: "Acquatico blu fresco. Clone di Bleu de Chanel."
   },
@@ -724,7 +731,8 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.101217.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/LPDO/Soul-Sea-101217.html",
     notino: "https://www.notino.it/search/?q=LPDO+Soul+Sea",
-    pinalli: "https://www.pinalli.it/search?q=LPDO+Soul+Sea",
+    pinalli: "https://www.pinalli.it/products/profumi-soul-sea-3lp0000000032",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lpdo-soul-sea-eau-de-parfum-P138887",
     description: "Marino italiano fresco. Onda del mare Adriatico."
   },
 {
@@ -744,6 +752,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/LPDO/Rubin-Fumee-81824.html",
     notino: "https://www.notino.it/search/?q=LPDO+Rubin+Fumee",
     pinalli: "https://www.pinalli.it/search?q=LPDO+Rubin+Fumee",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lpdo-rubin-fumee-eau-de-parfum-P143843",
     description: "Speziato fumoso italiano. Rubino e incenso."
   },
 {
@@ -762,7 +771,8 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.59646.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/LPDO/Hash-Intense-59646.html",
     notino: "https://www.notino.it/search/?q=LPDO+Hash+Intense",
-    pinalli: "https://www.pinalli.it/search?q=LPDO+Hash+Intense",
+    pinalli: "https://www.pinalli.it/products/profumi-hash-intense-3lp0000000018",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lpdo-hash-intense-eau-de-parfum-P132189",
     description: "Intenso e misterioso con cannabis. Notte italiana."
   },
 {
@@ -782,6 +792,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/LPDO/Desert-Dore-109290.html",
     notino: "https://www.notino.it/search/?q=LPDO+Desert+Dore",
     pinalli: "https://www.pinalli.it/search?q=LPDO+Desert+Dore",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lpdo-desert-dore-eau-de-parfum-intense-P159522",
     description: "Dorato gourmand del deserto. Sole e spezie."
   },
 {
@@ -800,7 +811,8 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.101216.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/LPDO/Gotique-Island-101216.html",
     notino: "https://www.notino.it/search/?q=LPDO+Gotique+Island",
-    pinalli: "https://www.pinalli.it/search?q=LPDO+Gotique+Island",
+    pinalli: "https://www.pinalli.it/products/profumi-gotique-island-3lp0000000016",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lpdo-gotique-island-eau-de-parfum-P143841",
     description: "Legnoso gotico e fresco. Isola misteriosa."
   },
 {
@@ -876,7 +888,7 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.88175.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Khamrah-Qahwa-88175.html",
     notino: "https://www.notino.it/lattafa/khamrah-qahwa-eau-de-parfum-unisex/",
-    pinalli: "https://www.pinalli.it/search?q=Lattafa+Khamrah+Qahwa",
+    pinalli: "https://www.pinalli.it/products/profumi-khamrah-qahwa-unisex-2lf0000000021",
     description: "Caffè e spezie gourmand. Clone di Angels' Share."
   },
 {
@@ -895,7 +907,8 @@ const perfumeDB = [
     image: "https://fimgs.net/mdimg/perfume/375x500.276.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Calvin-Klein/CK-One-276.html",
     notino: "https://www.notino.it/calvin-klein/ck-one-eau-de-toilette-unisex/",
-    pinalli: "https://www.pinalli.it/search?q=Calvin+Klein+CK+One",
+    pinalli: "https://www.pinalli.it/products/profumi-ck-one-1kcx00cks3",
+    sensationProfumerie: "https://www.sensationprofumerie.it/calvin-klein-one-eau-de-toilette-P137451",
     description: "Icona unisex degli anni '90. Fresco e pulito."
   },
 {
@@ -934,6 +947,7 @@ const perfumeDB = [
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Ramz-Lattafa-Gold-70368.html",
     notino: "https://www.notino.it/lattafa/ramz-gold-eau-de-parfum-unisex/",
     pinalli: "https://www.pinalli.it/search?q=Lattafa+Ramz+Gold",
+    sensationProfumerie: "https://www.sensationprofumerie.it/lattafa-ramz-gold-eau-de-parfum-P171739",
     description: "Fruttato dorato intenso. Clone di Aventus."
   }
 ];

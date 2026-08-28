@@ -1,13 +1,16 @@
 // ============================================================
 // CONTROLLO PREZZI PROFUMOTIFY
 // Gira su GitHub Actions (server-side, niente CORS): controlla il
-// prezzo reale su Notino per ogni profumo con link diretto confermato,
+// prezzo reale su ogni sito per cui abbiamo un link diretto confermato,
 // confronta con lo storico salvato in price-history.json, e manda un
-// alert Telegram sui cali di prezzo significativi.
+// alert Telegram sui cali di prezzo significativi e sul miglior sito.
 //
-// Nota onesta: monitoriamo solo i profumi con un link Notino diretto
-// verificato (non quelli con solo un link di ricerca) perché per
-// quelli non abbiamo un URL di prodotto stabile da controllare.
+// Nota onesta: monitoriamo solo i profumi/siti con un link diretto
+// verificato (non le sole ricerche) perché altrimenti non c'è un URL
+// di prodotto stabile da controllare. Pinalli è escluso qui: è dietro
+// una vera protezione Cloudflare interattiva, non aggirabile con un
+// browser headless normale — il suo link diretto resta comunque utile
+// nell'app per aprire la scheda giusta, solo non lo controlliamo qui.
 // ============================================================
 
 const fs = require('fs');
@@ -19,7 +22,15 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const HISTORY_PATH = path.join(__dirname, '..', 'price-history.json');
 const DROP_THRESHOLD_PCT = 5; // segnala solo cali >= 5%
-const REQUEST_DELAY_MS = 1500; // non martellare Notino di richieste
+const REQUEST_DELAY_MS = 1500; // non martellare i siti di richieste
+
+// Ogni sorgente ha una chiave stabile (usata come chiave in
+// price-history.json), un'etichetta per i messaggi, e il campo di
+// data.js con il link diretto da controllare.
+const SOURCES = [
+  { key: 'notino', label: 'Notino', urlField: 'notino' },
+  { key: 'sensationProfumerie', label: 'Sensation Profumerie', urlField: 'sensationProfumerie' }
+];
 
 function loadHistory() {
   try {
@@ -111,12 +122,16 @@ function extractPrice(html, targetMl) {
         if (picked) {
           return { price: picked.price, currency: picked.priceCurrency || 'EUR', matchedMl: picked.ml };
         }
-        // Nessuna offerta ha una taglia riconoscibile nel nome: unico
-        // prezzo disponibile, non possiamo scegliere per taglia.
+        // Nessuna offerta ha una taglia riconoscibile nel proprio nome
+        // (tipico di pagine con un solo formato, es. Sensation Profumerie,
+        // dove ogni taglia ha una sua pagina): prova a leggerla dal
+        // prodotto stesso (campo "size", o dalla descrizione) prima di
+        // arrenderti a "taglia sconosciuta".
         const o = offerList[0];
         const price = parseFloat(o.price ?? o.lowPrice);
         if (!isNaN(price)) {
-          return { price, currency: o.priceCurrency || 'EUR', matchedMl: null };
+          const itemMl = parseSizeMl(item.size) ?? parseSizeMl(item.description);
+          return { price, currency: o.priceCurrency || 'EUR', matchedMl: itemMl };
         }
       }
     } catch {
@@ -190,58 +205,86 @@ async function main() {
   const history = loadHistory();
   const today = new Date().toISOString().slice(0, 10);
 
-  const trackable = perfumeDB.filter(p => p.notino && !p.notino.includes('/search/'));
-  console.log(`Controllo prezzi per ${trackable.length}/${perfumeDB.length} profumi (link Notino diretto confermato)...`);
+  // Un profumo è tracciabile se ha almeno una sorgente con link diretto
+  // (non un fallback di ricerca).
+  const trackable = perfumeDB.filter(p =>
+    SOURCES.some(s => p[s.urlField] && !p[s.urlField].includes('/search/'))
+  );
+  console.log(`Controllo prezzi per ${trackable.length}/${perfumeDB.length} profumi...`);
 
   const alerts = [];
   const errors = [];
+  const bestBySources = []; // per il confronto "miglior sito" nel riepilogo
 
   for (const p of trackable) {
     const targetMl = parseSizeMl(p.size);
-    try {
-      const { price, currency, matchedMl } = await fetchPrice(p.notino, targetMl);
-      const prev = history[p.id];
+    const prevSources = history[p.id]?.sources || {};
+    const newSources = {};
+    const todayResults = []; // { source, price, sizeMl }
 
-      if (targetMl != null && matchedMl != null && matchedMl !== targetMl) {
-        console.log(`⚠️ ${p.brand} ${p.name}: in collezione è ${p.size}, ma su Notino oggi è disponibile solo la confezione da ${matchedMl}ml — uso quella.`);
-      }
+    for (const src of SOURCES) {
+      const url = p[src.urlField];
+      if (!url || url.includes('/search/')) continue;
 
-      // Confrontiamo con lo storico solo se la taglia rilevata è la
-      // stessa dell'ultima volta: altrimenti un "calo" potrebbe essere
-      // solo perché oggi risulta in vendita una confezione più piccola.
-      // La serie storica invece tiene tutti i punti (anche a taglie
-      // diverse), serve per il grafico nella scheda del profumo.
-      const series = prev?.history ? [...prev.history] : [];
-      const sameSizeEntries = series.filter(h => h.sizeMl === matchedMl);
-      const lastSameSize = sameSizeEntries[sameSizeEntries.length - 1];
+      try {
+        const { price, currency, matchedMl } = await fetchPrice(url, targetMl);
 
-      if (lastSameSize) {
-        const diff = price - lastSameSize.price;
-        const diffPct = (diff / lastSameSize.price) * 100;
-        if (diff < 0 && Math.abs(diffPct) >= DROP_THRESHOLD_PCT) {
-          alerts.push(
-            `📉 <b>${p.brand} ${p.name}</b> (${matchedMl ?? '?'}ml)\n` +
-            `${lastSameSize.price.toFixed(2)}€ → <b>${price.toFixed(2)}€</b> (${diffPct.toFixed(0)}%)\n` +
-            `${p.notino}`
-          );
+        if (targetMl != null && matchedMl != null && matchedMl !== targetMl) {
+          console.log(`⚠️ ${p.brand} ${p.name} (${src.label}): in collezione è ${p.size}, ma oggi è disponibile solo la confezione da ${matchedMl}ml — uso quella.`);
         }
-        const lowestSoFar = Math.min(...sameSizeEntries.map(h => h.price));
-        if (price < lowestSoFar) {
-          alerts.push(
-            `🏆 <b>${p.brand} ${p.name}</b> (${matchedMl ?? '?'}ml) è al minimo storico: <b>${price.toFixed(2)}€</b>\n${p.notino}`
-          );
+
+        // Confrontiamo con lo storico di QUESTA sorgente solo se la
+        // taglia rilevata è la stessa dell'ultima volta: altrimenti un
+        // "calo" potrebbe essere solo perché oggi risulta in vendita una
+        // confezione diversa. La serie storica tiene comunque tutti i
+        // punti (anche a taglie diverse), serve per il grafico.
+        const series = prevSources[src.key]?.history ? [...prevSources[src.key].history] : [];
+        const sameSizeEntries = series.filter(h => h.sizeMl === matchedMl);
+        const lastSameSize = sameSizeEntries[sameSizeEntries.length - 1];
+
+        if (lastSameSize) {
+          const diff = price - lastSameSize.price;
+          const diffPct = (diff / lastSameSize.price) * 100;
+          if (diff < 0 && Math.abs(diffPct) >= DROP_THRESHOLD_PCT) {
+            alerts.push(
+              `📉 <b>${p.brand} ${p.name}</b> su ${src.label} (${matchedMl ?? '?'}ml)\n` +
+              `${lastSameSize.price.toFixed(2)}€ → <b>${price.toFixed(2)}€</b> (${diffPct.toFixed(0)}%)\n` +
+              `${url}`
+            );
+          }
+          const lowestSoFar = Math.min(...sameSizeEntries.map(h => h.price));
+          if (price < lowestSoFar) {
+            alerts.push(
+              `🏆 <b>${p.brand} ${p.name}</b> su ${src.label} (${matchedMl ?? '?'}ml) è al minimo storico: <b>${price.toFixed(2)}€</b>\n${url}`
+            );
+          }
         }
+
+        const todayIdx = series.findIndex(h => h.date === today);
+        const entry = { date: today, price, sizeMl: matchedMl };
+        if (todayIdx >= 0) series[todayIdx] = entry; else series.push(entry);
+
+        newSources[src.key] = { currency, history: series.slice(-180) };
+        todayResults.push({ source: src.label, price, sizeMl: matchedMl, url });
+      } catch (e) {
+        errors.push(`${p.brand} ${p.name} (${src.label}): ${e.message}`);
+        // Se oggi questa sorgente fallisce, teniamo comunque il suo
+        // storico precedente invece di perderlo.
+        if (prevSources[src.key]) newSources[src.key] = prevSources[src.key];
       }
-
-      const todayIdx = series.findIndex(h => h.date === today);
-      const entry = { date: today, price, sizeMl: matchedMl };
-      if (todayIdx >= 0) series[todayIdx] = entry; else series.push(entry);
-
-      history[p.id] = { currency, history: series.slice(-180) };
-    } catch (e) {
-      errors.push(`${p.brand} ${p.name}: ${e.message}`);
+      await sleep(REQUEST_DELAY_MS);
     }
-    await sleep(REQUEST_DELAY_MS);
+
+    if (Object.keys(newSources).length > 0) {
+      history[p.id] = { sources: newSources };
+    }
+
+    // Se abbiamo più di una sorgente oggi, segnala qual è la più
+    // conveniente (utile soprattutto quando cambia rispetto a prima).
+    if (todayResults.length > 1) {
+      todayResults.sort((a, b) => a.price - b.price);
+      bestBySources.push({ perfume: p, best: todayResults[0], all: todayResults });
+    }
   }
 
   await closeBrowser();
@@ -255,8 +298,16 @@ async function main() {
     console.log('Nessun calo di prezzo significativo oggi.');
   }
 
+  if (bestBySources.length > 0) {
+    console.log(`\n💡 ${bestBySources.length} profumi con più sorgenti attive oggi:`);
+    bestBySources.forEach(({ perfume, best, all }) => {
+      const others = all.slice(1).map(o => `${o.source} €${o.price.toFixed(2)}`).join(', ');
+      console.log(`  - ${perfume.brand} ${perfume.name}: migliore ${best.source} €${best.price.toFixed(2)} (altre: ${others})`);
+    });
+  }
+
   if (errors.length > 0) {
-    console.log(`\n⚠️ ${errors.length} profumi non controllabili in questa esecuzione:`);
+    console.log(`\n⚠️ ${errors.length} controlli falliti in questa esecuzione:`);
     errors.forEach(e => console.log('  - ' + e));
   }
 }

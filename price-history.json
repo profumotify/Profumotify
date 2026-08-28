@@ -1,222 +1,310 @@
 {
   "1": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 72.25,
-        "sizeMl": 125
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 72.25,
+            "sizeMl": 125
+          }
+        ]
       }
-    ]
+    }
   },
   "2": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 36.5,
-        "sizeMl": 125
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 36.5,
+            "sizeMl": 125
+          }
+        ]
       }
-    ]
+    }
   },
   "3": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 58.65,
-        "sizeMl": 125
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 58.65,
+            "sizeMl": 125
+          }
+        ]
       }
-    ]
+    }
   },
   "4": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 36.5,
-        "sizeMl": null
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 36.5,
+            "sizeMl": null
+          }
+        ]
       }
-    ]
+    }
   },
   "5": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 22.9,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 22.9,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "7": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 120,
-        "sizeMl": 200
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 120,
+            "sizeMl": 200
+          }
+        ]
       }
-    ]
+    }
   },
   "8": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 71.4,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 71.4,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "9": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 74.5,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 74.5,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "11": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 15.5,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 15.5,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "12": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 20.5,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 20.5,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "15": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 15.9,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 15.9,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "18": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 30.9,
-        "sizeMl": 105
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 30.9,
+            "sizeMl": 105
+          }
+        ]
       }
-    ]
+    }
   },
   "19": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 20.2,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 20.2,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "21": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 32.3,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 32.3,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "22": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 22.9,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 22.9,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "30": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 22.86,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 22.86,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "32": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 17.76,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 17.76,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "33": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 13.51,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 13.51,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "34": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 30.17,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 30.17,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "46": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 29.5,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 29.5,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   },
   "47": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 34.76,
-        "sizeMl": 200
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 34.76,
+            "sizeMl": 200
+          }
+        ]
       }
-    ]
+    }
   },
   "49": {
-    "currency": "EUR",
-    "history": [
-      {
-        "date": "2026-08-28",
-        "price": 9.3,
-        "sizeMl": 100
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 9.3,
+            "sizeMl": 100
+          }
+        ]
       }
-    ]
+    }
   }
 }
