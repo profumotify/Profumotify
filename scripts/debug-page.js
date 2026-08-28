@@ -32,7 +32,8 @@ if (!targetUrl) {
     console.log(`--- Blocco JSON-LD #${i + 1} ---`);
     try {
       const data = JSON.parse(m[1].trim());
-      console.log(JSON.stringify(data, null, 2).slice(0, 3000));
+      if (data.offers) console.log('OFFERS:', JSON.stringify(data.offers));
+      console.log(JSON.stringify({ ...data, description: undefined }, null, 2).slice(0, 2000));
     } catch (e) {
       console.log('(non parsabile)', m[1].trim().slice(0, 300));
     }
