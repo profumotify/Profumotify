@@ -461,7 +461,7 @@ const perfumeDB = [
     price: 20.0, size: "100ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.48229.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Al-Haramain-Perfumes/Oyuny-48229.html",
-    notino: "https://www.notino.it/search/?q=Al+Haramain+Oyuny",
+    notino: "https://www.notino.it/al-haramain/oyuny-olio-profumato-unisex/p-16121604",
     pinalli: "https://www.pinalli.it/search?q=Al+Haramain+Oyuny",
     description: "Oud e rosa con incenso. Clone di Oud Satin Mood."
   },
