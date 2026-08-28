@@ -10,6 +10,16 @@
             "sizeMl": 125
           }
         ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 46.9,
+            "sizeMl": 125
+          }
+        ]
       }
     }
   },
@@ -49,7 +59,7 @@
           {
             "date": "2026-08-28",
             "price": 36.5,
-            "sizeMl": null
+            "sizeMl": 50
           }
         ]
       }
@@ -91,6 +101,16 @@
           {
             "date": "2026-08-28",
             "price": 71.4,
+            "sizeMl": 100
+          }
+        ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 70.2,
             "sizeMl": 100
           }
         ]
@@ -139,6 +159,20 @@
       }
     }
   },
+  "13": {
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 12.7,
+            "sizeMl": 100
+          }
+        ]
+      }
+    }
+  },
   "15": {
     "sources": {
       "notino": {
@@ -147,6 +181,16 @@
           {
             "date": "2026-08-28",
             "price": 15.9,
+            "sizeMl": 100
+          }
+        ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 17.9,
             "sizeMl": 100
           }
         ]
@@ -209,6 +253,30 @@
       }
     }
   },
+  "23": {
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 14.5,
+            "sizeMl": 90
+          }
+        ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 17.9,
+            "sizeMl": 90
+          }
+        ]
+      }
+    }
+  },
   "30": {
     "sources": {
       "notino": {
@@ -262,6 +330,100 @@
             "sizeMl": 100
           }
         ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 42.8,
+            "sizeMl": 100
+          }
+        ]
+      }
+    }
+  },
+  "35": {
+    "sources": {
+      "notino": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 33.5,
+            "sizeMl": 100
+          }
+        ]
+      }
+    }
+  },
+  "38": {
+    "sources": {
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 24.9,
+            "sizeMl": 100
+          }
+        ]
+      }
+    }
+  },
+  "39": {
+    "sources": {
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 24.9,
+            "sizeMl": 100
+          }
+        ]
+      }
+    }
+  },
+  "40": {
+    "sources": {
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 14,
+            "sizeMl": 30
+          }
+        ]
+      }
+    }
+  },
+  "41": {
+    "sources": {
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 24.9,
+            "sizeMl": 100
+          }
+        ]
+      }
+    }
+  },
+  "42": {
+    "sources": {
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 24.9,
+            "sizeMl": 100
+          }
+        ]
       }
     }
   },
@@ -290,6 +452,16 @@
             "sizeMl": 200
           }
         ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 39.9,
+            "sizeMl": 200
+          }
+        ]
       }
     }
   },
@@ -301,6 +473,16 @@
           {
             "date": "2026-08-28",
             "price": 9.3,
+            "sizeMl": 100
+          }
+        ]
+      },
+      "sensationProfumerie": {
+        "currency": "EUR",
+        "history": [
+          {
+            "date": "2026-08-28",
+            "price": 18.7,
             "sizeMl": 100
           }
         ]
