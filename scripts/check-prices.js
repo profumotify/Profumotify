@@ -73,6 +73,23 @@ function pickOffer(offers, targetMl) {
   return pool[0];
 }
 
+// Un blocco JSON-LD può annidare il vero Product in punti diversi a
+// seconda del tipo di pagina: un array diretto, un @graph (schema
+// ibrido), o - come nelle pagine "CollectionPage" di Notino per un
+// prodotto con una sola variante - dentro mainEntity. Appiattisce
+// tutto in una lista piatta di nodi da controllare.
+function flattenJsonLd(data, out = []) {
+  if (!data) return out;
+  if (Array.isArray(data)) {
+    data.forEach(d => flattenJsonLd(d, out));
+    return out;
+  }
+  out.push(data);
+  if (data['@graph']) flattenJsonLd(data['@graph'], out);
+  if (data.mainEntity) flattenJsonLd(data.mainEntity, out);
+  return out;
+}
+
 // Estrae prezzo e valuta da una pagina prodotto, per la confezione da
 // targetMl millilitri. Prova prima i dati strutturati JSON-LD
 // (schema.org Product/Offer, lo standard che i grandi e-commerce
@@ -84,7 +101,7 @@ function extractPrice(html, targetMl) {
   for (const m of ldMatches) {
     try {
       const data = JSON.parse(m[1].trim());
-      const candidates = Array.isArray(data) ? data : (data['@graph'] || [data]);
+      const candidates = flattenJsonLd(data);
       for (const item of candidates) {
         const offer = item.offers;
         if (!offer) continue;
