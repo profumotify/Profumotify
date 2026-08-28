@@ -1,4 +1,14 @@
 {
+  "1": {
+    "currency": "EUR",
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 72.25,
+        "sizeMl": 125
+      }
+    ]
+  },
   "2": {
     "currency": "EUR",
     "history": [
@@ -16,6 +26,16 @@
         "date": "2026-08-28",
         "price": 58.65,
         "sizeMl": 125
+      }
+    ]
+  },
+  "4": {
+    "currency": "EUR",
+    "history": [
+      {
+        "date": "2026-08-28",
+        "price": 36.5,
+        "sizeMl": null
       }
     ]
   },
