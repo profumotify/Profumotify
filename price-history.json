@@ -1,1 +1,122 @@
-{}
+{
+  "2": {
+    "price": 36.5,
+    "lowest": 36.5,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "3": {
+    "price": 58.65,
+    "lowest": 58.65,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "5": {
+    "price": 22.9,
+    "lowest": 22.9,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "7": {
+    "price": 120,
+    "lowest": 120,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "8": {
+    "price": 95.2,
+    "lowest": 95.2,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "9": {
+    "price": 74.5,
+    "lowest": 74.5,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "11": {
+    "price": 15.5,
+    "lowest": 15.5,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "12": {
+    "price": 20.5,
+    "lowest": 20.5,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "15": {
+    "price": 15.9,
+    "lowest": 15.9,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "18": {
+    "price": 8.5,
+    "lowest": 8.5,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "19": {
+    "price": 20.2,
+    "lowest": 20.2,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "21": {
+    "price": 32.3,
+    "lowest": 32.3,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "22": {
+    "price": 22.9,
+    "lowest": 22.9,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "30": {
+    "price": 22.86,
+    "lowest": 22.86,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "32": {
+    "price": 17.76,
+    "lowest": 17.76,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "33": {
+    "price": 13.51,
+    "lowest": 13.51,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "34": {
+    "price": 30.17,
+    "lowest": 30.17,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "46": {
+    "price": 29.5,
+    "lowest": 29.5,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "47": {
+    "price": 34.76,
+    "lowest": 34.76,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  },
+  "49": {
+    "price": 9.3,
+    "lowest": 9.3,
+    "currency": "EUR",
+    "lastChecked": "2026-08-28"
+  }
+}
