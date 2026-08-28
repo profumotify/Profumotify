@@ -3,8 +3,8 @@
 // aggressiva: solo header/fingerprint realistici), stampa cosa ottiene.
 const { chromium } = require('playwright');
 
-const URL = process.argv[2];
-if (!URL) {
+const targetUrl = process.argv[2];
+if (!targetUrl) {
   console.error('Uso: node scripts/debug-page.js <url>');
   process.exit(1);
 }
@@ -36,7 +36,7 @@ if (!URL) {
 
   // Prima visita la home (comportamento più naturale di un utente vero
   // che arriva da Google/direttamente sul sito), poi il prodotto.
-  const homeUrl = new URL(URL).origin;
+  const homeUrl = new URL(targetUrl).origin;
   console.log('Visito prima la home:', homeUrl);
   try {
     await page.goto(homeUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
@@ -45,8 +45,8 @@ if (!URL) {
     console.log('Home fallita:', e.message);
   }
 
-  console.log('\nVisito la pagina target:', URL);
-  const res = await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 20000 });
+  console.log('\nVisito la pagina target:', targetUrl);
+  const res = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
   console.log('HTTP status:', res ? res.status() : 'nessuna risposta');
   await page.waitForTimeout(2500);
 
