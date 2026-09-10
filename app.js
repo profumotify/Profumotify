@@ -1613,70 +1613,6 @@ function renderDiscovery() {
 }
 
 // ============================================================
-// AGGIORNAMENTO PREZZI - SIMULAZIONE
-// ============================================================
-async function showPriceUpdate() {
-  document.getElementById("priceModal").classList.add("active");
-  const progressEl = document.getElementById("priceProgress");
-  const textEl = document.getElementById("priceProgressText");
-  const resultsEl = document.getElementById("priceResults");
-
-  resultsEl.innerHTML = "";
-  const changes = [];
-
-  for (let i = 0; i < perfumeDB.length; i++) {
-    const p = perfumeDB[i];
-    const variation = (Math.random() * 0.25) - 0.15;
-    const newPrice = Math.max(p.price * (1 + variation), 5);
-    const diff = newPrice - p.price;
-    const diffPercent = ((diff / p.price) * 100).toFixed(1);
-
-    if (Math.abs(diff) > 0.5) {
-      changes.push({ perfume: p, oldPrice: p.price, newPrice: newPrice, diff: diff, diffPercent: diffPercent });
-      p.price = newPrice;
-    }
-
-    const pct = ((i + 1) / perfumeDB.length) * 100;
-    progressEl.style.width = pct + "%";
-    textEl.textContent = `${i + 1}/${perfumeDB.length} profumi analizzati...`;
-
-    await new Promise(r => setTimeout(r, 80));
-  }
-
-  if (changes.length === 0) {
-    resultsEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">✅ Nessuna variazione significativa rilevata</div>';
-  } else {
-    resultsEl.innerHTML = changes.map(c => `
-      <div class="price-result-item">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <img src="${c.perfume.image}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"
-            onerror="handleImageError(this)"
-            onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
-          <div class="placeholder" style="display:none; width:40px; height:40px; border-radius:8px; background:var(--bg-elevated); display:flex; align-items:center; justify-content:center; font-size:16px;">🌹</div>
-          <div>
-            <div style="font-weight:600; font-size:13px;">${c.perfume.name}</div>
-            <div style="font-size:11px; color:var(--text-muted);">${c.perfume.brand}</div>
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-weight:600;">€${c.newPrice.toFixed(0)}</div>
-          <div class="${c.diff > 0 ? "change-up" : "change-down"}">
-            ${c.diff > 0 ? "↑" : "↓"} ${Math.abs(c.diffPercent)}% (€${c.oldPrice.toFixed(0)})
-          </div>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  textEl.textContent = `Completato! ${changes.length} variazioni rilevate`;
-  renderCollection();
-  renderWishlist();
-  renderStats();
-  showToast("💰 Prezzi aggiornati!");
-}
-
-
-// ============================================================
 // RICERCA PREZZI GOOGLE SHOPPING
 // ============================================================
 function searchGooglePrices(perfumeName, brand) {
@@ -1692,12 +1628,6 @@ function searchIdealoPrices(perfumeName, brand) {
 function searchTrovaprezzi(perfumeName, brand) {
   const query = encodeURIComponent(`${brand} ${perfumeName}`);
   return `https://www.trovaprezzi.it/search.jsp?searchText=${query}`;
-}
-
-function closePriceModal(e) {
-  if (!e || e.target.id === "priceModal") {
-    document.getElementById("priceModal").classList.remove("active");
-  }
 }
 
 // ============================================================
