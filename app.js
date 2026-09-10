@@ -394,6 +394,7 @@ function renderCollection() {
             <span class="ph-name">${p.name}</span>
           </div>
           <span class="perfume-badge ${badgeClass}">${badgeText}</span>
+          ${p.needsEnrichment ? `<span class="perfume-badge" style="left:10px; right:auto; background:var(--warning); color:#1a1a2e;">🔍 DA COMPLETARE</span>` : ""}
         </div>
         <button class="wishlist-btn ${isWished ? "active" : ""}" onclick="event.stopPropagation(); toggleWishlist(${p.id})" title="${isWished ? "Rimuovi da" : "Aggiungi a"} wishlist">
           ${isWished ? "❤️" : "🤍"}
@@ -562,7 +563,11 @@ function submitAddPerfume(event) {
   }
 
   const nextId = Math.max(0, ...perfumeDB.map(p => p.id)) + 1;
-  const family = f.family.value || "Aromatico Legnoso";
+  // "Da definire" non è una famiglia reale (non è una chiave di
+  // familyStyles): resta fuori dall'analisi dei "vuoti" in Discovery/Stats
+  // finché non viene completata a mano, invece di far risultare falsamente
+  // coperta una famiglia a caso.
+  const family = f.family.value || "Da definire";
   const price = parseFloat(f.price.value) || 0;
   const size = f.size.value.trim() || "100ml";
   const image = f.image.value.trim();
@@ -570,9 +575,12 @@ function submitAddPerfume(event) {
   const notino = f.notino.value.trim() || getNotinoSearchUrl(brand, name);
   const pinalli = getPinalliSearchUrl(brand, name);
   const destination = f.destination.value;
+  // Niente immagine/link diretti/famiglia forniti a mano: questo profumo
+  // ha solo i dati minimi e andrebbe completato con una ricerca vera.
+  const needsEnrichment = !image && !f.fragrantica.value.trim() && !f.notino.value.trim() && f.family.value === "";
 
   const perfume = {
-    id: nextId, code: "CUSTOM" + nextId, name, brand, custom: true,
+    id: nextId, code: "CUSTOM" + nextId, name, brand, custom: true, needsEnrichment,
     type: f.type.value || "designer",
     concentration: f.concentration.value || "EDP",
     gender: f.gender.value || "Unisex",
@@ -605,7 +613,10 @@ function submitAddPerfume(event) {
   renderStats();
   renderDashboard();
   closeAddPerfumeModal();
-  showToast(`🎉 ${brand} ${name} aggiunto ${destination === "wishlist" ? "alla wishlist" : "alla collezione"}!`);
+  const where = destination === "wishlist" ? "alla wishlist" : "alla collezione";
+  showToast(needsEnrichment
+    ? `🎉 ${brand} ${name} aggiunto ${where}! Dimmi che l'hai aggiunto e completo foto/note/link.`
+    : `🎉 ${brand} ${name} aggiunto ${where}!`);
 }
 
 function deleteCustomPerfume(id) {
@@ -908,6 +919,10 @@ function showDetail(id) {
     <div class="detail-body">
       <div class="detail-brand">${p.brand} • ${p.code}</div>
       <div class="detail-name">${p.name}</div>
+      ${p.needsEnrichment ? `
+      <div style="padding:10px 14px; background:rgba(251,191,36,0.15); border:1px solid var(--warning); border-radius:10px; font-size:12px; color:var(--warning); margin-bottom:12px;">
+        🔍 Aggiunto solo con i dati minimi. Dimmi in chat che l'hai aggiunto: cerco foto, note e link diretti veri e li completo qui.
+      </div>` : ""}
       <div class="detail-tags">
         <span class="tag family">${style.icon} ${p.olfactoryFamily}</span>
         <span class="tag season">${seasonData[p.season[0]]?.icon || "✨"} ${p.season.join(", ")}</span>
