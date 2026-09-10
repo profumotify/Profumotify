@@ -22,6 +22,21 @@ try {
   console.warn("Custom perfumes parse error, using empty array:", e);
   customPerfumes = [];
 }
+// Se nel frattempo lo stesso profumo (stesso brand+nome) è stato
+// aggiunto per davvero a data.js - es. dopo che l'utente l'ha segnalato
+// in chat ed è stato verificato e committato - la copia locale
+// "provvisoria" andrebbe rimossa, altrimenti compare doppia in lista.
+const normalizeKey = (brand, name) => `${brand}|${name}`.toLowerCase().trim();
+const officialKeys = new Set(perfumeDB.map(p => normalizeKey(p.brand, p.name)));
+const stillLocalOnly = customPerfumes.filter(p => !officialKeys.has(normalizeKey(p.brand, p.name)));
+if (stillLocalOnly.length !== customPerfumes.length) {
+  customPerfumes = stillLocalOnly;
+  try {
+    localStorage.setItem("profumotify_custom_perfumes_v1", JSON.stringify(customPerfumes));
+  } catch (e) {
+    console.warn("Could not save deduped custom perfumes:", e);
+  }
+}
 perfumeDB.push(...customPerfumes);
 
 let currentFilter = "all";
@@ -643,6 +658,20 @@ function deleteCustomPerfume(id) {
   renderStats();
   renderDashboard();
   showToast(`🗑️ ${removed.brand} ${removed.name} rimosso`);
+}
+
+function copyPendingSyncList() {
+  const pending = perfumeDB.filter(p => p.custom && p.needsEnrichment);
+  if (pending.length === 0) return;
+  const list = pending.map(p => `- ${p.brand} - ${p.name} (${p.size}${wishlist.includes(p.id) ? ", wishlist" : ", collezione"})`).join("\n");
+  const text = `Profumi da completare:\n${list}`;
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast("📋 Lista copiata! Incollala in chat"))
+      .catch(() => showToast("⚠️ Copia non riuscita, seleziona il testo a mano"));
+  } else {
+    showToast("⚠️ Copia negli appunti non supportata su questo browser");
+  }
 }
 
 // ============================================================
@@ -1534,6 +1563,18 @@ function renderDiscovery() {
 
   const gaps = getCollectionGaps();
   const gapFamilies = [...gaps.missingFamilies, ...gaps.rareFamilies];
+  const pendingSync = perfumeDB.filter(p => p.custom && p.needsEnrichment);
+
+  const pendingSyncHtml = pendingSync.length === 0 ? "" : `
+    <div style="margin-bottom:24px; padding:20px; background:var(--bg-card); border:1px solid var(--warning); border-radius:16px;">
+      <h3 style="color:var(--warning); margin:0 0 8px;">🔍 ${pendingSync.length} profumi da completare</h3>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">Aggiunti veloci, ancora solo su questo dispositivo. Copia la lista e incollala in chat: verifico i dati veri e li salvo definitivamente.</p>
+      <button class="btn btn-outline" style="font-size:12px; padding:8px 14px;" onclick="copyPendingSyncList()">📋 Copia lista</button>
+      <ul style="margin:12px 0 0; padding-left:20px; font-size:13px; color:var(--text-muted);">
+        ${pendingSync.map(p => `<li>${p.brand} - ${p.name} (${p.size})</li>`).join("")}
+      </ul>
+    </div>
+  `;
 
   const gapSectionHtml = `
     <div style="margin-bottom:24px; padding:20px; background:var(--bg-card); border:1px solid var(--accent); border-radius:16px;">
@@ -1573,7 +1614,7 @@ function renderDiscovery() {
     { title: "🆕 Novità 2023+", filter: "new", desc: "Le ultime uscite nella collezione" }
   ];
 
-  container.innerHTML = gapSectionHtml + sections.map(sec => {
+  container.innerHTML = pendingSyncHtml + gapSectionHtml + sections.map(sec => {
     let items = [];
     if (sec.filter === "top") {
       items = [...perfumeDB].sort((a, b) => b.rating - a.rating).slice(0, 8);
