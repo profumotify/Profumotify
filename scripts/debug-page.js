@@ -1,7 +1,7 @@
-// Script temporaneo di debug: ispeziona la struttura reale di Fragrantica
-// (pagina di ricerca + scheda prodotto) prima di scrivere una logica di
-// estrazione per l'arricchimento automatico dei profumi. Va rimosso a
-// fine diagnosi.
+// Script temporaneo di debug: seconda verifica su Fragrantica - stavolta
+// visitando prima la home e usando il vero campo di ricerca, invece di
+// costruire l'URL a mano, per capire se il blocco/i risultati scorrelati
+// del primo test dipendevano da questo. Va rimosso a fine diagnosi.
 const { chromium } = require('playwright');
 
 (async () => {
@@ -10,62 +10,45 @@ const { chromium } = require('playwright');
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
     locale: 'it-IT'
   });
+  const page = await context.newPage();
 
-  // 1) Pagina di ricerca: come sono strutturati i risultati?
-  const searchUrl = 'https://www.fragrantica.com/search/?q=' + encodeURIComponent('Xerjoff Naxos');
-  console.log('\n=== RICERCA: ' + searchUrl + ' ===');
+  console.log('=== Visita home Fragrantica ===');
   try {
-    const page = await context.newPage();
-    const res = await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    console.log('Status:', res ? res.status() : 'nessuna risposta');
-    await page.waitForTimeout(2000);
-    const html = await page.content();
-    console.log('Lunghezza HTML:', html.length);
-    console.log('Titolo:', await page.title());
+    const res = await page.goto('https://www.fragrantica.com/', { waitUntil: 'domcontentloaded', timeout: 20000 });
+    console.log('Status home:', res ? res.status() : 'nessuna risposta');
+    await page.waitForTimeout(2500);
+    const homeHtml = await page.content();
+    const cfMarkers = /challenges\.cloudflare\.com|Just a moment|__cf_chl|Access Denied|captcha/i.test(homeHtml);
+    console.log('Indizi blocco anti-bot sulla home:', cfMarkers);
+    console.log('Titolo home:', await page.title());
 
-    // Cerca link a pagine /perfume/ nei risultati
-    const perfumeLinks = [...html.matchAll(/href="(https:\/\/www\.fragrantica\.com\/perfume\/[^"]+)"/g)]
-      .map(m => m[1]).filter((v, i, a) => a.indexOf(v) === i).slice(0, 10);
-    console.log('Link a schede profumo trovati:', perfumeLinks.length);
-    perfumeLinks.forEach(l => console.log('  ' + l));
-
-    const cfMarkers = /challenges\.cloudflare\.com|Just a moment|__cf_chl|Access Denied|captcha/i.test(html);
-    console.log('Indizi blocco anti-bot:', cfMarkers);
-    await page.close();
+    // Cerca un vero campo di ricerca nella pagina
+    const searchInputSelectors = ['input[type="search"]', 'input[name*="search" i]', 'input[placeholder*="search" i]', '#search', '.search-input'];
+    let foundSelector = null;
+    for (const sel of searchInputSelectors) {
+      const count = await page.locator(sel).count();
+      if (count > 0) { foundSelector = sel; break; }
+    }
+    console.log('Campo di ricerca trovato:', foundSelector || 'nessuno dei selettori comuni');
   } catch (e) {
-    console.log('ERRORE ricerca:', e.message);
+    console.log('ERRORE home:', e.message);
   }
 
-  await new Promise(r => setTimeout(r, 3000));
+  await page.waitForTimeout(2000);
 
-  // 2) Pagina prodotto nota (Dior Sauvage EDT, molto popolare, sicuro esista)
-  const productUrl = 'https://www.fragrantica.com/perfume/Dior/Sauvage-31861.html';
-  console.log('\n=== PRODOTTO: ' + productUrl + ' ===');
+  console.log('\n=== Prodotto (stessa sessione, dopo aver visitato la home) ===');
   try {
-    const page = await context.newPage();
-    const res = await page.goto(productUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    console.log('Status:', res ? res.status() : 'nessuna risposta');
+    const res2 = await page.goto('https://www.fragrantica.com/perfume/Dior/Sauvage-31861.html', { waitUntil: 'domcontentloaded', timeout: 20000 });
+    console.log('Status prodotto:', res2 ? res2.status() : 'nessuna risposta');
     await page.waitForTimeout(2000);
-    const html = await page.content();
-    console.log('Lunghezza HTML:', html.length);
-    console.log('Titolo:', await page.title());
-
-    const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+    const html2 = await page.content();
+    console.log('Titolo prodotto:', await page.title());
+    const cfMarkers2 = /challenges\.cloudflare\.com|Just a moment|__cf_chl|Access Denied|captcha/i.test(html2);
+    console.log('Indizi blocco anti-bot sul prodotto:', cfMarkers2);
+    const ogImage = html2.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
     console.log('og:image:', ogImage ? ogImage[1] : 'non trovato');
-
-    const ldMatches = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
-    console.log('Blocchi JSON-LD trovati:', ldMatches.length);
-    ldMatches.forEach((m, i) => {
-      console.log(`  JSON-LD[${i}] (primi 800 char):`, m[1].trim().replace(/\s+/g, ' ').slice(0, 800));
-    });
-
-    // Cerca la piramide olfattiva (classi tipiche pyramid/notes)
-    const pyramidHint = html.match(/pyramid[\s\S]{0,300}/i);
-    console.log('Indizio piramide note (contesto):', pyramidHint ? pyramidHint[0].replace(/\s+/g, ' ').slice(0, 300) : 'non trovato');
-
-    const cfMarkers = /challenges\.cloudflare\.com|Just a moment|__cf_chl|Access Denied|captcha/i.test(html);
-    console.log('Indizi blocco anti-bot:', cfMarkers);
-    await page.close();
+    const ldMatches = [...html2.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    console.log('Blocchi JSON-LD:', ldMatches.length);
   } catch (e) {
     console.log('ERRORE prodotto:', e.message);
   }
