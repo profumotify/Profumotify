@@ -26,9 +26,18 @@ try {
 // aggiunto per davvero a data.js - es. dopo che l'utente l'ha segnalato
 // in chat ed è stato verificato e committato - la copia locale
 // "provvisoria" andrebbe rimossa, altrimenti compare doppia in lista.
+// Scarta anche per collisione di id: un id assegnato in locale
+// (max esistente + 1 al momento dell'aggiunta) può coincidere con un
+// id assegnato più tardi a una voce ufficiale con nome diverso -
+// in quel caso showDetail() trova sempre la prima (quella ufficiale)
+// e il doppione locale resta un vicolo cieco irraggiungibile dall'UI,
+// quindi va eliminato comunque.
 const normalizeKey = (brand, name) => `${brand}|${name}`.toLowerCase().trim();
 const officialKeys = new Set(perfumeDB.map(p => normalizeKey(p.brand, p.name)));
-const stillLocalOnly = customPerfumes.filter(p => !officialKeys.has(normalizeKey(p.brand, p.name)));
+const officialIds = new Set(perfumeDB.map(p => p.id));
+const stillLocalOnly = customPerfumes.filter(p =>
+  !officialKeys.has(normalizeKey(p.brand, p.name)) && !officialIds.has(p.id)
+);
 if (stillLocalOnly.length !== customPerfumes.length) {
   customPerfumes = stillLocalOnly;
   try {
@@ -577,7 +586,12 @@ function submitAddPerfume(event) {
     return;
   }
 
-  const nextId = Math.max(0, ...perfumeDB.map(p => p.id)) + 1;
+  // Spazio di numerazione separato da quello di data.js (che parte da 1
+  // e cresce ogni volta che aggiungo una scheda verificata): partendo da
+  // 100000 un id locale non può mai collidere con uno ufficiale assegnato
+  // in seguito, anche se nel frattempo il database cresce.
+  const CUSTOM_ID_BASE = 100000;
+  const nextId = Math.max(CUSTOM_ID_BASE, ...perfumeDB.filter(p => p.id >= CUSTOM_ID_BASE).map(p => p.id)) + 1;
   // "Da definire" non è una famiglia reale (non è una chiave di
   // familyStyles): resta fuori dall'analisi dei "vuoti" in Discovery/Stats
   // finché non viene completata a mano, invece di far risultare falsamente
