@@ -961,7 +961,7 @@ const perfumeDB = [
     rating: 9,
     intensity: 8,
     price: 40.5, size: "100ml",
-    image: "",
+    image: "https://cdn.notinoimg.com/order_2k/afnan/6290171075738_01-o/9-pm-elixir___250725.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Afnan/9PM-Elixir-111894.html",
     notino: "https://www.notino.it/afnan/9-pm-elixir-estratto-profumato-unisex/",
     pinalli: "https://www.pinalli.it/search?q=Afnan+9pm+Elixir",
