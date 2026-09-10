@@ -947,6 +947,25 @@ const perfumeDB = [
     pinalli: "https://www.pinalli.it/search?q=Lattafa+Ramz+Gold",
     sensationProfumerie: "https://www.sensationprofumerie.it/lattafa-ramz-gold-eau-de-parfum-P171739",
     description: "Fruttato dorato intenso. Clone di Aventus."
+  },
+  {
+    id: 50, code: "PF050", name: "9pm Elixir", brand: "Afnan",
+    type: "arab",
+    concentration: "Extrait", gender: "Unisex", year: 2025,
+    olfactoryFamily: "Orientale Speziato",
+    topNotes: ["Cardamomo", "Noce moscata", "Elemi"],
+    heartNotes: ["Pimento", "Cuoio", "Lavanda"],
+    baseNotes: ["Vaniglia", "Patchouli", "Labdano", "Cisto"],
+    season: ["Autunno", "Inverno"], occasion: "Serata / Formale",
+    longevity: 9, sillage: 8, value: 8,
+    rating: 9,
+    intensity: 8,
+    price: 40.5, size: "100ml",
+    image: "",
+    fragrantica: "https://www.fragrantica.com/perfume/Afnan/9PM-Elixir-111894.html",
+    notino: "https://www.notino.it/afnan/9-pm-elixir-estratto-profumato-unisex/",
+    pinalli: "https://www.pinalli.it/search?q=Afnan+9pm+Elixir",
+    description: "Speziato e caldo, cardamomo e cuoio su fondo vanigliato. Da sera."
   }
 ];
 
