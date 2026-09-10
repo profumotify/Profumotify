@@ -518,7 +518,7 @@ const perfumeDB = [
     price: 20.0, size: "100ml",
     image: "https://fimgs.net/mdimg/perfume/375x500.99586.jpg",
     fragrantica: "https://www.fragrantica.com/perfume/Lattafa-Perfumes/Teriaq-Intense-99586.html",
-    notino: "https://www.notino.it/search/?q=Lattafa+Teriaq+Intense",
+    notino: "https://www.notino.it/lattafa/teriaq-intense-eau-de-parfum-unisex/",
     pinalli: "https://www.pinalli.it/products/profumi-teriaq-intense-unisex-2lf0000000036",
     description: "Gourmand dolce e intenso. Clone di Angels' Share di Kilian."
   },
