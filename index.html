@@ -93,7 +93,10 @@
     <!-- Collection Tab -->
     <div id="tab-collection" class="tab-content">
       <div class="stats-grid" id="statsGrid"></div>
-      <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca profumo o brand..." oninput="searchPerfumes()">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca profumo o brand..." oninput="searchPerfumes()" style="flex:1;">
+        <button class="btn btn-primary" style="white-space:nowrap; padding:12px 16px;" onclick="openAddPerfumeModal()" title="Aggiungi un profumo nuovo alla collezione o wishlist">➕ Aggiungi</button>
+      </div>
       <div class="filters" id="typeFilters">
         <button class="filter-chip active" onclick="filterType('all', this)">Tutti</button>
         <button class="filter-chip" onclick="filterType('arab', this)">🌙 Arabi</button>
@@ -139,6 +142,66 @@
     <div class="modal" onclick="event.stopPropagation()">
       <button class="modal-close" onclick="closeDetailModal()">✕</button>
       <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- Add Perfume Modal -->
+  <div class="modal-overlay" id="addPerfumeModal" onclick="closeAddPerfumeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeAddPerfumeModal()">✕</button>
+      <h2 style="font-family:'Playfair Display',serif; color:var(--accent); margin-bottom:6px;">➕ Aggiungi profumo</h2>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Un profumo che non hai ancora in collezione. Solo brand e nome sono obbligatori: il resto puoi lasciarlo vuoto e completarlo dopo.</p>
+      <form id="addPerfumeForm" class="add-perfume-form" onsubmit="submitAddPerfume(event)">
+        <div class="form-row">
+          <label>Brand *<input type="text" name="brand" required placeholder="es. Xerjoff"></label>
+          <label>Nome *<input type="text" name="name" required placeholder="es. Naxos"></label>
+        </div>
+        <div class="form-row">
+          <label>Tipo
+            <select name="type">
+              <option value="designer">Designer</option>
+              <option value="arab">Arabo</option>
+              <option value="niche">Niche</option>
+            </select>
+          </label>
+          <label>Concentrazione
+            <select name="concentration">
+              <option value="EDT">EDT</option>
+              <option value="EDP" selected>EDP</option>
+              <option value="Parfum">Parfum</option>
+              <option value="Extrait">Extrait</option>
+              <option value="Cologne">Cologne</option>
+            </select>
+          </label>
+          <label>Genere
+            <select name="gender">
+              <option value="Uomo">Uomo</option>
+              <option value="Donna">Donna</option>
+              <option value="Unisex" selected>Unisex</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Famiglia olfattiva
+            <select name="family" id="addPerfumeFamily"></select>
+          </label>
+          <label>Formato<input type="text" name="size" placeholder="100ml"></label>
+          <label>Prezzo di riferimento (€)<input type="number" name="price" min="0" step="0.01" placeholder="es. 50"></label>
+        </div>
+        <div class="form-row">
+          <label>Link Fragrantica (opzionale)<input type="url" name="fragrantica" placeholder="lascia vuoto per cercare"></label>
+          <label>Link Notino (opzionale)<input type="url" name="notino" placeholder="lascia vuoto per cercare"></label>
+        </div>
+        <label>URL immagine (opzionale)<input type="url" name="image" placeholder="https://..."></label>
+        <label>Note personali<textarea name="description" rows="2" placeholder="Cosa ti ha colpito di questo profumo?"></textarea></label>
+        <label>Dove aggiungerlo
+          <select name="destination">
+            <option value="collection">🌹 Collezione (lo possiedi già)</option>
+            <option value="wishlist">💎 Wishlist (lo vuoi provare)</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Aggiungi</button>
+      </form>
     </div>
   </div>
 

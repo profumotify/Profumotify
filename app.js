@@ -12,6 +12,18 @@ try {
   console.warn("Wishlist parse error, using empty array:", e);
   wishlist = [];
 }
+// Profumi aggiunti a mano dall'utente (non fanno parte della
+// collezione base hardcoded in data.js): salvati in locale e
+// fusi dentro perfumeDB così ogni vista esistente li vede già.
+let customPerfumes = [];
+try {
+  customPerfumes = JSON.parse(localStorage.getItem("profumotify_custom_perfumes_v1") || "[]");
+} catch (e) {
+  console.warn("Custom perfumes parse error, using empty array:", e);
+  customPerfumes = [];
+}
+perfumeDB.push(...customPerfumes);
+
 let currentFilter = "all";
 let searchQuery = "";
 let currentTab = "collection";
@@ -514,6 +526,115 @@ function findOffers() {
 }
 
 // ============================================================
+// AGGIUNGI PROFUMO (non presente nella collezione base)
+// ============================================================
+function saveCustomPerfumes() {
+  const custom = perfumeDB.filter(p => p.custom);
+  try {
+    localStorage.setItem("profumotify_custom_perfumes_v1", JSON.stringify(custom));
+  } catch (e) {
+    console.warn("Could not save custom perfumes:", e);
+  }
+}
+
+function openAddPerfumeModal() {
+  const familyOptions = Object.keys(familyStyles || {}).map(f => `<option value="${f}">${f}</option>`).join("");
+  const familySelect = document.getElementById("addPerfumeFamily");
+  if (familySelect) familySelect.innerHTML = `<option value="">— scegli —</option>${familyOptions}`;
+  document.getElementById("addPerfumeForm").reset();
+  document.getElementById("addPerfumeModal").classList.add("active");
+}
+
+function closeAddPerfumeModal(e) {
+  if (!e || e.target.id === "addPerfumeModal") {
+    document.getElementById("addPerfumeModal").classList.remove("active");
+  }
+}
+
+function submitAddPerfume(event) {
+  event.preventDefault();
+  const f = event.target;
+  const brand = f.brand.value.trim();
+  const name = f.name.value.trim();
+  if (!brand || !name) {
+    showToast("⚠️ Brand e nome sono obbligatori");
+    return;
+  }
+
+  const nextId = Math.max(0, ...perfumeDB.map(p => p.id)) + 1;
+  const family = f.family.value || "Aromatico Legnoso";
+  const price = parseFloat(f.price.value) || 0;
+  const size = f.size.value.trim() || "100ml";
+  const image = f.image.value.trim();
+  const fragrantica = f.fragrantica.value.trim() || getFragranticaSearchUrl(brand, name);
+  const notino = f.notino.value.trim() || getNotinoSearchUrl(brand, name);
+  const pinalli = getPinalliSearchUrl(brand, name);
+  const destination = f.destination.value;
+
+  const perfume = {
+    id: nextId, code: "CUSTOM" + nextId, name, brand, custom: true,
+    type: f.type.value || "designer",
+    concentration: f.concentration.value || "EDP",
+    gender: f.gender.value || "Unisex",
+    year: new Date().getFullYear(),
+    olfactoryFamily: family,
+    topNotes: [], heartNotes: [], baseNotes: [],
+    season: ["Primavera", "Estate", "Autunno", "Inverno"],
+    occasion: "Casual / Giorno",
+    longevity: 5, sillage: 5, value: 5, rating: 5, intensity: 5,
+    price, size, image,
+    fragrantica, notino, pinalli,
+    description: f.description.value.trim() || "Aggiunto manualmente da te."
+  };
+
+  perfumeDB.push(perfume);
+  saveCustomPerfumes();
+
+  if (destination === "wishlist") {
+    wishlist.push(perfume.id);
+    try {
+      localStorage.setItem("profumotify_wishlist_v8", JSON.stringify(wishlist));
+    } catch (e) {
+      console.warn("Could not save wishlist:", e);
+    }
+  }
+
+  renderCollection();
+  renderWishlist();
+  renderDiscovery();
+  renderStats();
+  renderDashboard();
+  closeAddPerfumeModal();
+  showToast(`🎉 ${brand} ${name} aggiunto ${destination === "wishlist" ? "alla wishlist" : "alla collezione"}!`);
+}
+
+function deleteCustomPerfume(id) {
+  const idx = perfumeDB.findIndex(p => p.id === id && p.custom);
+  if (idx === -1) return;
+  const removed = perfumeDB[idx];
+  perfumeDB.splice(idx, 1);
+  saveCustomPerfumes();
+
+  const wIdx = wishlist.indexOf(id);
+  if (wIdx > -1) {
+    wishlist.splice(wIdx, 1);
+    try {
+      localStorage.setItem("profumotify_wishlist_v8", JSON.stringify(wishlist));
+    } catch (e) {
+      console.warn("Could not save wishlist:", e);
+    }
+  }
+
+  closeDetailModal();
+  renderCollection();
+  renderWishlist();
+  renderDiscovery();
+  renderStats();
+  renderDashboard();
+  showToast(`🗑️ ${removed.brand} ${removed.name} rimosso`);
+}
+
+// ============================================================
 // ADVISOR - CONSIGLI METEO + ROTAZIONE
 // ============================================================
 
@@ -872,6 +993,7 @@ function showDetail(id) {
         <button class="btn ${isWished ? "btn-danger" : "btn-outline"}" onclick="toggleWishlist(${p.id}); showDetail(${p.id})">
           ${isWished ? "❤️ Rimuovi" : "🤍 Wishlist"}
         </button>
+        ${p.custom ? `<button class="btn btn-danger" onclick="if(confirm('Rimuovere ${p.brand} ${p.name}?')) deleteCustomPerfume(${p.id})">🗑️ Rimuovi profumo aggiunto</button>` : ""}
       </div>
     </div>
   `;
@@ -943,6 +1065,29 @@ function renderNotes() {
 // STATS AVANZATE v9.0 - GRAFICI INTERATTIVI
 // ============================================================
 
+// Analizza la collezione per trovare famiglie olfattive e note comuni
+// poco o per niente rappresentate - usato sia dalla Dashboard (Stats)
+// sia dalla Discovery per suggerire cosa cercare.
+function getCollectionGaps() {
+  const byFamily = {};
+  const allNotes = {};
+  perfumeDB.forEach(p => {
+    byFamily[p.olfactoryFamily] = (byFamily[p.olfactoryFamily] || 0) + 1;
+    [...p.topNotes, ...p.heartNotes, ...p.baseNotes].forEach(n => {
+      allNotes[n] = (allNotes[n] || 0) + 1;
+    });
+  });
+
+  const allFamilies = Object.keys(familyStyles || {});
+  const missingFamilies = allFamilies.filter(f => !byFamily[f]);
+  const rareFamilies = allFamilies.filter(f => byFamily[f] === 1);
+
+  const commonNotes = ["Oud", "Rosa", "Vaniglia", "Muschio", "Ambra", "Patchouli", "Iris", "Ylang-ylang", "Sandalwood", "Cedro"];
+  const missingNotes = commonNotes.filter(n => !allNotes[n]);
+
+  return { byFamily, allNotes, missingFamilies, rareFamilies, missingNotes };
+}
+
 function renderAdvancedStats() {
   const container = document.getElementById("dashboardContent");
   if (!container) return;
@@ -950,9 +1095,7 @@ function renderAdvancedStats() {
   // Calcola statistiche
   const byType = { arab: 0, designer: 0, niche: 0 };
   const bySeason = { "Primavera": 0, "Estate": 0, "Autunno": 0, "Inverno": 0 };
-  const byFamily = {};
   const byBrand = {};
-  const allNotes = {};
   let totalValue = 0;
   let avgRating = 0;
   let totalLongevity = 0;
@@ -961,30 +1104,21 @@ function renderAdvancedStats() {
   perfumeDB.forEach(p => {
     byType[p.type]++;
     p.season.forEach(s => bySeason[s] = (bySeason[s] || 0) + 1);
-    byFamily[p.olfactoryFamily] = (byFamily[p.olfactoryFamily] || 0) + 1;
     byBrand[p.brand] = (byBrand[p.brand] || 0) + 1;
     totalValue += p.price;
     avgRating += p.rating;
     totalLongevity += p.longevity;
     totalSillage += p.sillage;
-
-    [...p.topNotes, ...p.heartNotes, ...p.baseNotes].forEach(n => {
-      allNotes[n] = (allNotes[n] || 0) + 1;
-    });
   });
 
   avgRating = (avgRating / perfumeDB.length).toFixed(1);
   const avgLongevity = (totalLongevity / perfumeDB.length).toFixed(1);
   const avgSillage = (totalSillage / perfumeDB.length).toFixed(1);
 
-  // Top note mancanti (note comuni che non hai)
-  const commonNotes = ["Oud", "Rosa", "Vaniglia", "Muschio", "Ambra", "Patchouli", "Iris", "Ylang-ylang", "Sandalwood", "Cedro"];
-  const missingNotes = commonNotes.filter(n => !allNotes[n]).map(n => `🌸 ${n}`);
-
-  // Famiglie mancanti
-  const allFamilies = Object.keys(familyStyles || {});
-  const yourFamilies = Object.keys(byFamily);
-  const missingFamilies = allFamilies.filter(f => !yourFamilies.includes(f)).map(f => `🎨 ${f}`);
+  const gaps = getCollectionGaps();
+  const allNotes = gaps.allNotes;
+  const missingNotes = gaps.missingNotes.map(n => `🌸 ${n}`);
+  const missingFamilies = gaps.missingFamilies.map(f => `🎨 ${f}`);
 
   container.innerHTML = `
     <div class="stats-grid" style="margin-bottom:20px;">
@@ -1383,6 +1517,39 @@ function renderDiscovery() {
   const container = document.getElementById("discoveryContent");
   if (!container) return;
 
+  const gaps = getCollectionGaps();
+  const gapFamilies = [...gaps.missingFamilies, ...gaps.rareFamilies];
+
+  const gapSectionHtml = `
+    <div style="margin-bottom:24px; padding:20px; background:var(--bg-card); border:1px solid var(--accent); border-radius:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:12px; flex-wrap:wrap;">
+        <h3 style="color:var(--accent); margin:0;">🧭 Cosa manca nella tua collezione</h3>
+        <button class="btn btn-primary" style="padding:8px 16px; font-size:12px; white-space:nowrap;" onclick="openAddPerfumeModal()">➕ Aggiungi profumo</button>
+      </div>
+      ${gapFamilies.length === 0 ? `
+        <p style="color:var(--success); font-size:14px;">🎉 Hai almeno un profumo per ogni famiglia olfattiva principale!</p>
+      ` : `
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:14px;">Famiglie olfattive assenti o presenti con un solo profumo: cerca qualcosa di nuovo da provare, o aggiungi direttamente ciò che trovi.</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${gapFamilies.map(f => {
+            const style = familyStyles[f] || { color: "#888", icon: "✨" };
+            const has = gaps.byFamily[f] ? `${gaps.byFamily[f]} in collezione` : "nessuno in collezione";
+            const q = encodeURIComponent(f + " profumo");
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-elevated); border-radius:12px; flex-wrap:wrap; gap:8px;">
+                <span style="font-size:13px;"><span style="color:${style.color};">${style.icon}</span> <strong>${f}</strong> <span style="color:var(--text-muted);">(${has})</span></span>
+                <div style="display:flex; gap:6px;">
+                  <a href="https://www.fragrantica.com/search/?q=${q}" target="_blank" class="btn btn-outline" style="padding:6px 12px; font-size:11px;">📖 Fragrantica</a>
+                  <a href="https://www.notino.it/search/?q=${q}" target="_blank" class="btn btn-outline" style="padding:6px 12px; font-size:11px;">🛒 Notino</a>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `}
+    </div>
+  `;
+
   const sections = [
     { title: "🌙 Arabi Low-Cost", filter: "arab", desc: "I migliori profumi arabi economici" },
     { title: "✨ Designer Iconici", filter: "designer", desc: "I classici che non deludono mai" },
@@ -1391,7 +1558,7 @@ function renderDiscovery() {
     { title: "🆕 Novità 2023+", filter: "new", desc: "Le ultime uscite nella collezione" }
   ];
 
-  container.innerHTML = sections.map(sec => {
+  container.innerHTML = gapSectionHtml + sections.map(sec => {
     let items = [];
     if (sec.filter === "top") {
       items = [...perfumeDB].sort((a, b) => b.rating - a.rating).slice(0, 8);
