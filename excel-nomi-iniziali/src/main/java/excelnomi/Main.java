@@ -36,6 +36,7 @@ public final class Main {
     private final DefaultListModel<File> fileListModel = new DefaultListModel<>();
     private final JList<File> fileList = new JList<>(fileListModel);
     private final JTextField keywordsField = new JTextField(String.join(", ", ExcelProcessor.DEFAULT_HEADER_KEYWORDS));
+    private final JTextField anchorsField = new JTextField(String.join(", ", FreeTextNameRedactor.DEFAULT_ANCHOR_PHRASES));
     private final JTextField destinationField = new JTextField();
     private final JTextArea logArea = new JTextArea();
     private final JProgressBar progressBar = new JProgressBar();
@@ -71,16 +72,26 @@ public final class Main {
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
         JLabel intro = new JLabel("<html>Carica i file Excel da elaborare (es. i 12 file dei mesi, "
-                + "piu' eventuali file aggiuntivi).<br>"
-                + "Nelle colonne con intestazione tipo \"Cognome e Nome\" i nominativi verranno "
-                + "sostituiti con le sole iniziali (es. \"Maria Luisa De Rossi\" &rarr; \"M.L.D.R.\") "
-                + "in <b>nuovi</b> file, senza toccare gli originali.</html>");
+                + "piu' eventuali file aggiuntivi). In <b>ogni foglio</b> di ogni file, i nominativi "
+                + "trovati in colonne tipo \"Cognome e Nome\" e nel testo libero (es. moduli di "
+                + "dichiarazione/dimissione) verranno sostituiti con le sole iniziali "
+                + "(es. \"Maria Luisa De Rossi\" &rarr; \"M.L.D.R.\") in <b>nuovi</b> file, "
+                + "senza toccare gli originali.</html>");
         panel.add(intro, BorderLayout.NORTH);
 
-        JPanel keywordsPanel = new JPanel(new BorderLayout(4, 4));
+        JPanel keywordsPanel = new JPanel(new GridLayout(2, 1, 4, 8));
         keywordsPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
-        keywordsPanel.add(new JLabel("Intestazioni colonna da riconoscere (separate da virgola):"), BorderLayout.NORTH);
-        keywordsPanel.add(keywordsField, BorderLayout.CENTER);
+
+        JPanel headerRow = new JPanel(new BorderLayout(4, 4));
+        headerRow.add(new JLabel("Intestazioni colonna da riconoscere (separate da virgola):"), BorderLayout.NORTH);
+        headerRow.add(keywordsField, BorderLayout.CENTER);
+        keywordsPanel.add(headerRow);
+
+        JPanel anchorRow = new JPanel(new BorderLayout(4, 4));
+        anchorRow.add(new JLabel("Frasi-ancora per nomi nel testo libero (separate da virgola):"), BorderLayout.NORTH);
+        anchorRow.add(anchorsField, BorderLayout.CENTER);
+        keywordsPanel.add(anchorRow);
+
         panel.add(keywordsPanel, BorderLayout.CENTER);
 
         return panel;
@@ -190,6 +201,17 @@ public final class Main {
             keywords = ExcelProcessor.DEFAULT_HEADER_KEYWORDS;
         }
 
+        List<String> anchors = new ArrayList<>();
+        for (String part : anchorsField.getText().split(",")) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                anchors.add(trimmed);
+            }
+        }
+        if (anchors.isEmpty()) {
+            anchors = FreeTextNameRedactor.DEFAULT_ANCHOR_PHRASES;
+        }
+
         List<File> files = new ArrayList<>();
         for (int i = 0; i < fileListModel.size(); i++) {
             files.add(fileListModel.get(i));
@@ -201,18 +223,20 @@ public final class Main {
         progressBar.setValue(0);
         progressBar.setMaximum(files.size());
 
-        new ProcessingWorker(files, keywords, destinationDir).execute();
+        new ProcessingWorker(files, keywords, anchors, destinationDir).execute();
     }
 
     private final class ProcessingWorker extends SwingWorker<Void, String> {
         private final List<File> files;
         private final List<String> keywords;
+        private final List<String> anchors;
         private final String destinationDir;
         private int successCount = 0;
 
-        ProcessingWorker(List<File> files, List<String> keywords, String destinationDir) {
+        ProcessingWorker(List<File> files, List<String> keywords, List<String> anchors, String destinationDir) {
             this.files = files;
             this.keywords = keywords;
+            this.anchors = anchors;
             this.destinationDir = destinationDir;
         }
 
@@ -222,15 +246,17 @@ public final class Main {
             for (File file : files) {
                 try {
                     Path outputPath = buildOutputPath(file, destinationDir);
-                    ExcelProcessor.Result result = ExcelProcessor.process(file.toPath(), outputPath, keywords);
-                    if (result.columnsFound == 0) {
+                    ExcelProcessor.Result result = ExcelProcessor.process(file.toPath(), outputPath, keywords, anchors);
+                    int totalTransformed = result.namesTransformed + result.freeTextNamesTransformed;
+                    if (totalTransformed == 0) {
                         publish(String.format(
-                                "[ATTENZIONE] %s -> nessuna colonna con intestazione riconosciuta trovata (0 nominativi trasformati)",
+                                "[ATTENZIONE] %s -> nessun nominativo riconosciuto (0 colonne, 0 nel testo libero)",
                                 result.inputFileName));
                     } else {
                         publish(String.format(
-                                "%s -> %s  (colonne trovate: %d, nominativi trasformati: %d)",
-                                result.inputFileName, result.outputFile.getFileName(), result.columnsFound, result.namesTransformed));
+                                "%s -> %s  (colonne trovate: %d, nominativi in colonna: %d, nel testo libero: %d)",
+                                result.inputFileName, result.outputFile.getFileName(), result.columnsFound,
+                                result.namesTransformed, result.freeTextNamesTransformed));
                     }
                     successCount++;
                 } catch (Exception ex) {

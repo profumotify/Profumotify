@@ -20,11 +20,12 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Cerca, in ogni foglio di un file Excel, le colonne la cui intestazione
- * corrisponde a un nominativo (es. "Cognome e Nome") e ne sostituisce i
- * valori con le sole iniziali, lasciando invariato tutto il resto del file
- * (formule, formattazione, altri fogli, ecc.). Il file originale non viene
- * mai toccato: il risultato viene scritto in un nuovo file.
+ * Cerca, in ogni foglio di un file Excel, sia le colonne la cui intestazione
+ * corrisponde a un nominativo (es. "Cognome e Nome") sia i nominativi scritti
+ * in testo libero (vedi {@link FreeTextNameRedactor}), sostituendoli con le
+ * sole iniziali. Tutto il resto del file resta invariato (formule,
+ * formattazione, altri fogli, ecc.). Il file originale non viene mai
+ * toccato: il risultato viene scritto in un nuovo file.
  */
 final class ExcelProcessor {
 
@@ -48,16 +49,20 @@ final class ExcelProcessor {
         final Path outputFile;
         final int columnsFound;
         final int namesTransformed;
+        final int freeTextNamesTransformed;
 
-        Result(String inputFileName, Path outputFile, int columnsFound, int namesTransformed) {
+        Result(String inputFileName, Path outputFile, int columnsFound, int namesTransformed,
+               int freeTextNamesTransformed) {
             this.inputFileName = inputFileName;
             this.outputFile = outputFile;
             this.columnsFound = columnsFound;
             this.namesTransformed = namesTransformed;
+            this.freeTextNamesTransformed = freeTextNamesTransformed;
         }
     }
 
-    static Result process(Path inputFile, Path outputFile, List<String> headerKeywords) throws IOException {
+    static Result process(Path inputFile, Path outputFile, List<String> headerKeywords,
+                           List<String> freeTextAnchorPhrases) throws IOException {
         Set<String> normalizedKeywords = new HashSet<>();
         for (String keyword : headerKeywords) {
             String normalized = normalize(keyword);
@@ -68,6 +73,7 @@ final class ExcelProcessor {
 
         int columnsFound = 0;
         int namesTransformed = 0;
+        int freeTextNamesTransformed = 0;
 
         try (InputStream in = Files.newInputStream(inputFile);
              Workbook workbook = WorkbookFactory.create(in)) {
@@ -111,6 +117,12 @@ final class ExcelProcessor {
                         namesTransformed++;
                     }
                 }
+
+                // Oltre alle colonne strutturate, cerchiamo nominativi scritti in
+                // testo libero (es. moduli di dichiarazione/dimissione) riconosciuti
+                // da una frase-ancora ("Il sottoscritto", "sig.ra", "dell'utente", ...).
+                // Eseguito su ogni foglio, anche quelli senza colonne "Cognome e Nome".
+                freeTextNamesTransformed += FreeTextNameRedactor.process(sheet, freeTextAnchorPhrases);
             }
 
             // Alcuni fogli hanno colonne "specchio" con formule tipo =IF(X9=0,"",X9):
@@ -127,7 +139,8 @@ final class ExcelProcessor {
             }
         }
 
-        return new Result(inputFile.getFileName().toString(), outputFile, columnsFound, namesTransformed);
+        return new Result(inputFile.getFileName().toString(), outputFile, columnsFound, namesTransformed,
+                freeTextNamesTransformed);
     }
 
     private static String normalize(String value) {
