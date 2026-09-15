@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
  */
 final class FreeTextNameRedactor {
 
-    static final List<String> DEFAULT_ANCHOR_PHRASES = List.of(
+    static final List<String> DEFAULT_ANCHOR_PHRASES = Arrays.asList(
             "il sottoscritto",
             "la sottoscritta",
             "dell'utente",
