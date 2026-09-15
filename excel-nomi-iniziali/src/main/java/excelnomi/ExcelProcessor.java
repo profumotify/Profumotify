@@ -103,15 +103,33 @@ final class ExcelProcessor {
                             continue;
                         }
                         Cell cell = row.getCell(column);
-                        if (cell == null || cell.getCellType() != CellType.STRING) {
+                        if (cell == null) {
                             continue;
                         }
-                        String value = cell.getStringCellValue();
+                        CellType type = cell.getCellType();
+                        String value;
+                        if (type == CellType.STRING) {
+                            value = cell.getStringCellValue();
+                        } else if (type == CellType.FORMULA) {
+                            // Colonne "specchio" (es. =IF(X9=0,"",X9)): il valore vero e'
+                            // quello gia' calcolato in cache. Lo leggiamo e sostituiamo la
+                            // formula con il valore statico, cosi' il nome anonimizzato resta
+                            // nel file anche se nessuno lo riapre in Excel per ricalcolare.
+                            if (cell.getCachedFormulaResultType() != CellType.STRING) {
+                                continue;
+                            }
+                            value = cell.getStringCellValue();
+                        } else {
+                            continue;
+                        }
                         if (!NameInitialsConverter.looksLikeName(value)) {
                             continue;
                         }
                         if (SKIP_VALUES.contains(normalize(value))) {
                             continue;
+                        }
+                        if (type == CellType.FORMULA) {
+                            cell.setCellFormula(null);
                         }
                         cell.setCellValue(NameInitialsConverter.toInitials(value));
                         namesTransformed++;
