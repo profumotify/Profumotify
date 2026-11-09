@@ -17,21 +17,24 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Legge un file di rendicontazione mensile (modulo standard ASL BA con i
  * fogli "DSS1 - All. B e C" ... "DSS14 - All. B e C") ed estrae, per ogni
- * utente elencato, comune di residenza, giorni/rimborso di frequenza e
- * giorni/rimborso di trasporto. Le posizioni delle colonne (B, E, N, O, Q,
- * R, S) corrispondono al modulo regionale standard, identico in tutti i
- * centri diurni; per sicurezza ogni foglio viene comunque validato
- * controllando che l'intestazione in colonna E contenga "comune" prima di
- * leggerne i dati.
+ * utente elencato, comune di residenza, anno di nascita, giorni/rimborso di
+ * frequenza e giorni/rimborso di trasporto. Le posizioni delle colonne (B,
+ * E, G, N, O, Q, R, S) corrispondono al modulo regionale standard, identico
+ * in tutti i centri diurni; per sicurezza ogni foglio viene comunque
+ * validato controllando che l'intestazione in colonna E contenga "comune"
+ * prima di leggerne i dati.
  */
 final class MonthlyReportParser {
 
     private static final int COL_NOME = 1;               // B
     private static final int COL_COMUNE = 4;              // E
+    private static final int COL_DATA_NASCITA = 6;        // G
     private static final int COL_GIORNI_FREQUENZA = 13;   // N
     private static final int COL_RIMBORSO_FREQUENZA = 14; // O
     private static final int COL_GIORNI_TRASPORTO = 16;   // Q
@@ -40,6 +43,8 @@ final class MonthlyReportParser {
 
     private static final int HEADER_ROW_INDEX = 5; // riga 6
     private static final int FIRST_DATA_ROW_INDEX = 8; // riga 9
+
+    private static final Pattern YEAR_IN_TEXT = Pattern.compile("(19|20)\\d{2}");
 
     private static final String[] MESI_ITALIANI = {
             "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -103,9 +108,10 @@ final class MonthlyReportParser {
                     int giorniTrasporto = (int) Math.round(numericValue(row, COL_GIORNI_TRASPORTO));
                     double rimborsoTrasporto = numericValue(row, COL_RIMBORSO_TRASPORTO);
                     String buonoTrasporto = stringValue(row, COL_BUONO_TRASPORTO);
+                    Integer annoNascita = extractAnnoNascita(row, COL_DATA_NASCITA);
 
                     records.add(new GuestMonthRecord(meseLabel, meseSortKey, sheet.getSheetName(), nome.trim(),
-                            comune.trim(), giorniFrequenza, rimborsoFrequenza, giorniTrasporto,
+                            annoNascita, comune.trim(), giorniFrequenza, rimborsoFrequenza, giorniTrasporto,
                             buonoTrasporto == null ? "" : buonoTrasporto.trim(), rimborsoTrasporto));
                 }
             }
@@ -188,5 +194,37 @@ final class MonthlyReportParser {
             }
         }
         return 0;
+    }
+
+    private static Integer extractAnnoNascita(Row row, int col) {
+        Cell cell = row.getCell(col);
+        if (cell == null) {
+            return null;
+        }
+        CellType type = cell.getCellType();
+        if (type == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(cell.getDateCellValue());
+            return cal.get(Calendar.YEAR);
+        }
+        // La "Data di nascita" e' talvolta inserita come testo libero (es. "10.08.1975")
+        // anziche' come vera data: cerchiamo comunque un anno plausibile nel testo.
+        String text = null;
+        if (type == CellType.STRING) {
+            text = cell.getStringCellValue();
+        } else if (type == CellType.FORMULA) {
+            try {
+                if (cell.getCachedFormulaResultType() == CellType.STRING) {
+                    text = cell.getStringCellValue();
+                }
+            } catch (Exception ignored) {
+                return null;
+            }
+        }
+        if (text == null) {
+            return null;
+        }
+        Matcher matcher = YEAR_IN_TEXT.matcher(text);
+        return matcher.find() ? Integer.parseInt(matcher.group()) : null;
     }
 }

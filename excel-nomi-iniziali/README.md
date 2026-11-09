@@ -90,17 +90,28 @@ utenti quanto richiedere a rimborso per il trasporto.
 
 ### Logica di calcolo
 
-Per ogni utente, il file di rendicontazione riporta già l'importo pieno del
-trasporto del mese (colonna "Rimborso ASL BA" nel blocco Trasporti),
-calcolato come `giorni di trasporto × tariffa giornaliera` (14,50 € oppure
-11,39 € a seconda del "Buono servizio trasporto"). Di questo importo pieno:
+Per ogni utente, il file di rendicontazione riporta l'importo del trasporto
+del mese come `giorni di trasporto × tariffa giornaliera`. La tariffa
+piena è **14,50 €/giorno**; se l'utente usufruisce del "Buono servizio
+trasporto" (colonna SI/NO), una parte del costo è già coperta dal buono e
+la tariffa effettiva scende a **11,39 €/giorno** (sconto di 3,11 €/giorno).
 
-- il **40%** resta a carico dell'ASL;
-- il **60%** è la quota a carico del Comune di residenza dell'utente, da
-  richiedere a rimborso.
+La ripartizione 40% ASL / 60% Comune va calcolata sulla **tariffa piena**,
+non sull'importo già scontato:
 
-(Split confermato sul modulo ufficiale "Mod_Ut_TRASPORTI", foglio "Divis.
-x DSS-Comune": `Quota parte Comune = Importo Trasporto × 0.6`.)
+- la **quota ASL è sempre il 40% di 14,50 €/giorno**, non influenzata dal
+  buono;
+- la **quota Comune è il 60% di 14,50 €/giorno, meno l'intero sconto del
+  buono servizio** (3,11 €/giorno nei giorni in cui è stato usato).
+
+Le due quote sommate tornano sempre uguali all'importo effettivamente
+registrato in rendicontazione (40%+60%-sconto = importo con/senza buono).
+Lo sconto non va quindi tolto proporzionalmente da entrambe le quote: è
+interamente a carico del Comune, perché il buono è uno strumento sociale
+che riduce l'onere della famiglia/Comune, non quello dell'ASL.
+
+(Split 40/60 confermato sul modulo ufficiale "Mod_Ut_TRASPORTI", foglio
+"Divis. x DSS-Comune": `Quota parte Comune = Importo Trasporto × 0.6`.)
 
 La frequenza (retta giornaliera) resta interamente a carico ASL e non viene
 ripartita sui comuni.
@@ -108,25 +119,42 @@ ripartita sui comuni.
 ### Cosa genera
 
 1. **Aggiungi file...** → carica uno o più file di rendicontazione
-   mensile (va bene anche la versione già anonimizzata: lo strumento non
-   ha bisogno dei nomi reali, solo di comune/giorni/importi).
+   mensile, anche tutti e 12 i mesi dell'anno insieme (va bene anche la
+   versione già anonimizzata: lo strumento non ha bisogno dei nomi reali,
+   solo di comune/giorni/importi/anno di nascita).
 2. Premi **Calcola rimborsi**. Per ogni file caricato viene creato un file
    `<nome file>_rimborsi_comuni.xlsx` con:
    - un foglio **Riepilogo** con i totali per comune (utenti, giorni e
-     importi di frequenza e trasporto, quota ASL 40%, quota Comune 60%);
-   - un foglio per ciascun comune con il dettaglio riga per riga degli
-     utenti di quel comune (nominativo, giorni, importi) — pronto per
-     essere estratto/inoltrato al singolo comune.
-3. Se carichi più di un mese, viene generato anche un file
-   `Riepilogo_Comuni_<periodo>.xlsx` con gli stessi fogli ma aggregati
-   sull'intero periodo caricato (es. un semestre), con il dettaglio
-   mese-per-mese in ogni foglio comune e i totali di periodo nel
-   riepilogo.
+     importi di frequenza e trasporto, quota ASL 40%, sconto buoni
+     servizio, quota Comune da richiedere);
+   - un foglio per ciascun comune, con **due sezioni**: in alto i
+     **totali per utente nel periodo** (nominativo, anno di nascita, mesi
+     coperti, giorni e importi totali, quota ASL e quota Comune) — questo
+     è il dato pronto da comunicare al Comune, un utente per riga; sotto,
+     il **dettaglio mensile** riga per riga per la tracciabilità interna.
+3. Se carichi più file (es. tutti i 12 mesi), viene generato anche un
+   file `Riepilogo_Comuni_<periodo>.xlsx` con la stessa struttura ma
+   aggregata sull'intero periodo caricato (es. un anno intero): il
+   riepilogo per comune e, per ciascun comune, i totali annui per utente
+   più il dettaglio mese per mese.
+
+### Anno di nascita e omonimie
+
+Ogni riga riporta anche l'anno di nascita dell'utente (letto dalla
+colonna "Data di nascita" della rendicontazione). Nel totale per utente,
+se per lo stesso nominativo compaiono anni di nascita diversi tra un mese
+e l'altro (segno di una probabile omonimia, due persone diverse con lo
+stesso nome), viene mostrato un avviso (es. "1980/1990 ⚠") invece di un
+anno solo, così non si sommano per errore gli importi di due persone
+diverse. Lo stesso anno di nascita è utile anche per distinguere, nel
+file di corrispondenza dell'Anonimizzatore, nominativi diversi che
+generano le stesse iniziali.
 
 ### Verifica
 
-Il calcolo è stato validato sui dati reali di 5 mesi (147 utenti/mese):
-zero differenze rispetto al ricalcolo indipendente riga per riga.
+Il calcolo è stato validato sui dati reali di 6 mesi (178 utenti/mese) e
+su casi sintetici con buono servizio applicato in mesi alterni: zero
+differenze rispetto al ricalcolo indipendente riga per riga.
 
 ## Note tecniche comuni
 
