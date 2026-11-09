@@ -16,8 +16,14 @@ final class ModuloGExtractor {
             "dell.{0,3}utente\\s+(.+?)\\s+nat[oa/]+\\s+il\\s+(\\d{1,2}/\\d{1,2}/\\d{4})",
             Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern TRASPORTI = Pattern.compile(
-            "trasporti\\s+effettuati\\s+nel\\s+mese\\D*(\\d{1,3})", Pattern.CASE_INSENSITIVE);
+    // Limitato alla stessa riga (niente \n) per non "sconfinare" in un numero
+    // non correlato piu' avanti nel testo (es. un giorno di una data successiva)
+    // quando il valore non e' stampato subito dopo l'etichetta.
+    private static final Pattern TRASPORTI_SAME_LINE = Pattern.compile(
+            "trasporti\\s+effettuati\\s+nel\\s+mese[^\\d\\n]{0,15}(\\d{1,2})", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TRASPORTI_LABEL = Pattern.compile(
+            "trasporti\\s+effettuati\\s+nel\\s+mese", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ISOLATED_NUMBER = Pattern.compile("^[|\\s]*(\\d{1,2})[|\\s]*$");
 
     private static final Pattern NUMERIC_TOKEN = Pattern.compile("^(\\d{1,2}|[oO])$");
     private static final Pattern STRIP_NOISE = Pattern.compile("[^0-9oO]");
@@ -69,10 +75,7 @@ final class ModuloGExtractor {
             }
         }
 
-        Matcher mt = TRASPORTI.matcher(ocrText);
-        if (mt.find()) {
-            e.giorniTrasporto = Integer.parseInt(mt.group(1));
-        }
+        e.giorniTrasporto = extractTrasporti(ocrText);
 
         e.completo = e.nominativo != null && e.dataNascita != null
                 && e.giorniPresenza != null && e.giorniTrasporto != null
@@ -82,6 +85,35 @@ final class ModuloGExtractor {
                 && e.giorniPresenza >= e.giorniTrasporto
                 && e.giorniPresenza <= 31 && e.giorniTrasporto <= 31;
         return e;
+    }
+
+    private static Integer extractTrasporti(String ocrText) {
+        String[] lines = ocrText.split("\\r?\\n");
+        for (int i = 0; i < lines.length; i++) {
+            if (!TRASPORTI_LABEL.matcher(lines[i]).find()) {
+                continue;
+            }
+            Matcher sameLine = TRASPORTI_SAME_LINE.matcher(lines[i]);
+            if (sameLine.find()) {
+                return Integer.parseInt(sameLine.group(1));
+            }
+            // Il numero a volte finisce, per via dell'impaginazione del modulo, su una
+            // riga vicina (sopra o sotto) invece che sulla stessa riga dell'etichetta:
+            // la cerchiamo solo se quella riga contiene ESCLUSIVAMENTE un numero isolato,
+            // per non confonderla con altri dati del modulo (es. la data di firma).
+            for (int offset : new int[]{-1, 1, -2, 2}) {
+                int j = i + offset;
+                if (j < 0 || j >= lines.length) {
+                    continue;
+                }
+                Matcher iso = ISOLATED_NUMBER.matcher(lines[j].trim());
+                if (iso.matches()) {
+                    return Integer.parseInt(iso.group(1));
+                }
+            }
+            return null;
+        }
+        return null;
     }
 
     private static int toInt(String token) {
