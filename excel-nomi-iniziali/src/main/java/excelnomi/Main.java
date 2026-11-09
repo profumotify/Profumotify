@@ -34,6 +34,7 @@ public final class Main {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Anonimizza Nomi", new AnonimizzatorePanel());
         tabs.addTab("Rimborsi Comuni", new RimborsiComuniPanel());
+        tabs.addTab("Da PDF a Excel", new PdfOcrPanel());
         frame.add(tabs);
 
         frame.setSize(820, 620);
