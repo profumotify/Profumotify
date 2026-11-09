@@ -23,14 +23,35 @@ final class AllegatoBExtractor {
 
     private static final Pattern DSS_NUMBER = Pattern.compile("DSS\\s*n\\.?\\s*(\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
+    // Il separatore tra nominativo e comune nell'OCR e' inaffidabile: a volte e'
+    // una barra verticale "|", a volte viene letto come "]", a volte manca del
+    // tutto (solo uno spazio). Il comune e' quasi sempre un'unica parola in
+    // maiuscolo: si cattura quindi come l'ultima parola singola immediatamente
+    // prima della data di nascita, qualunque sia (o non sia) il separatore
+    // davanti ad essa, e tutto il resto prima di quella parola e' il nominativo.
     private static final Pattern ROW_START = Pattern.compile(
-            "([A-ZÀ-Ý][A-ZÀ-Ý'.\\s]{2,35}?)\\s*\\|\\s*([A-ZÀ-Ý][A-ZÀ-Ý.\\s]{1,30}?)\\s*\\|?\\s*(\\d{1,2}/\\d{1,2}/\\d{4})",
+            "([A-ZÀ-Ý][A-ZÀ-Ý'.\\s]{2,45}?)\\s*[|\\]]?\\s*([A-ZÀ-Ý.]{3,20})\\s*[|\\]]?\\s*(\\d{1,2}/\\d{1,2}/\\d{4})",
             Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern BUONO_TOKEN = Pattern.compile("\\b(SI|NO)\\b", Pattern.CASE_INSENSITIVE);
+    // "SI" viene talvolta letto dall'OCR come "sì"/"SÌ" (accento, non solo
+    // maiuscolo/minuscolo): CASE_INSENSITIVE da solo non lo riconosce perche'
+    // "ì" non e' la stessa lettera di "i", serve elencarlo esplicitamente.
+    // \b di default considera "parola" solo i caratteri ASCII: senza
+    // UNICODE_CHARACTER_CLASS, un confine giusto dopo la "ì" accentata non
+    // verrebbe riconosciuto come tale (ì non e' \w in ASCII) e il match
+    // fallirebbe sempre per la variante accentata.
+    private static final Pattern BUONO_TOKEN = Pattern.compile("\\b(S[IÌì]|NO)\\b",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CHARACTER_CLASS);
 
     private static final Pattern SMALL_INT = Pattern.compile("(\\d{1,2})");
     private static final Pattern DATE = Pattern.compile("\\d{1,2}/\\d{1,2}/\\d{4}");
+
+    // Apostrofi/virgolette "intelligenti" letti dall'OCR (es. davanti a un
+    // comune) non fanno parte della classe di caratteri di ROW_START e
+    // spezzerebbero il match a meta' parola: si neutralizzano a spazio prima
+    // di ogni confronto.
+    private static final Pattern NOISE_PUNCT = Pattern.compile(
+            "[‘’“”‚„«»–—]");
 
     private AllegatoBExtractor() {
     }
@@ -65,7 +86,8 @@ final class AllegatoBExtractor {
 
     static List<Riga> parseRows(String ocrText) {
         List<Riga> righe = new ArrayList<>();
-        for (String line : ocrText.split("\\r?\\n")) {
+        for (String rawLine : ocrText.split("\\r?\\n")) {
+            String line = NOISE_PUNCT.matcher(rawLine).replaceAll(" ");
             Matcher start = ROW_START.matcher(line);
             if (!start.find()) {
                 continue; // riga senza un nominativo+comune+data riconoscibili: probabilmente vuota/rumore
@@ -79,7 +101,10 @@ final class AllegatoBExtractor {
             String tail = line.substring(start.end());
             Matcher buono = BUONO_TOKEN.matcher(tail);
             if (buono.find()) {
-                r.buonoTrasporto = buono.group(1).toUpperCase();
+                // Normalizzato a "SI"/"NO" puri (senza accento) anche se letto come
+                // "sì"/"SÌ": l'accento e' solo rumore OCR, e la colonna Excel usa
+                // una validazione a tendina con le sole stringhe "SI"/"NO".
+                r.buonoTrasporto = buono.group(1).toUpperCase().startsWith("S") ? "SI" : "NO";
                 String beforeBuono = tail.substring(0, buono.start());
                 // Il numero di giorni di trasporto e' l'intero isolato piu' vicino,
                 // immediatamente prima del flag SI/NO sulla stessa riga.
