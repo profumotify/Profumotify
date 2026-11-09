@@ -2,15 +2,25 @@
 
 App desktop in Java, **senza installazione**: è un unico file `.jar`
 eseguibile che si avvia con un doppio click (o con `java -jar`), pensata per
-i computer dove non è possibile installare programmi. Contiene due
-strumenti, in due schede della stessa finestra.
+i computer dove non è possibile installare programmi. Contiene tre
+strumenti, in tre schede della stessa finestra.
 
 ## Requisiti
 
-Serve solo una Java Runtime (JRE) già presente sul computer — versione 8 o
-superiore. Non è richiesta alcuna installazione di software aggiuntivo: il
-file `ExcelNomiIniziali.jar` generato è autonomo (contiene già tutte le
-librerie necessarie).
+Serve una Java Runtime (JRE) già presente sul computer — versione 8 o
+superiore. Per le schede **Anonimizza Nomi** e **Rimborsi Comuni** non
+serve altro: il file `ExcelNomiIniziali.jar` è autonomo (contiene già
+tutte le librerie necessarie).
+
+Per la scheda **Da PDF a Excel** serve anche **Tesseract OCR** installato
+a parte (non è incluso nel jar: è un programma nativo, non una libreria
+Java). Su Windows: scarica e installa l'eseguibile da
+https://github.com/UB-Mannheim/tesseract/wiki (versione "UB Mannheim"),
+assicurandoti di includere il pacchetto lingua **Italian** durante
+l'installazione, e lascialo aggiungere al PATH di sistema (opzione
+proposta dall'installer). Dopo l'installazione, nella scheda "Da PDF a
+Excel" il pulsante "Verifica Tesseract" conferma se è stato trovato
+correttamente.
 
 ## Come costruire il file .jar
 
@@ -155,6 +165,66 @@ generano le stesse iniziali.
 Il calcolo è stato validato sui dati reali di 6 mesi (178 utenti/mese) e
 su casi sintetici con buono servizio applicato in mesi alterni: zero
 differenze rispetto al ricalcolo indipendente riga per riga.
+
+---
+
+## Scheda 3 — Da PDF a Excel
+
+Converte un PDF **scansionato** di rendicontazione mensile (lo stesso
+modulo standard ASL BA, stampato, firmato/timbrato e poi scansionato) in
+un file Excel con la stessa struttura dei fogli "DSS... - All. B e C",
+pronto per essere completato e poi usato nelle altre due schede.
+
+### Cosa legge in automatico, e cosa no
+
+Il PDF scansionato è un'immagine, non testo: serve l'OCR (riconoscimento
+ottico dei caratteri). Testato su un caso reale (34 pagine), l'affidabilità
+varia molto a seconda della pagina:
+
+- **Mese di riferimento** (pagina "Allegato A"): lettura affidabile.
+- **Nominativo, data di nascita, giorni di presenza, giorni di trasporto**:
+  letti dalle pagine "Modulo G" (una per utente, autocertificazione
+  famiglia) — layout semplice con pochi campi isolati, molto più
+  affidabile della tabella fitta "Allegato B". Nel test reale: 21 utenti
+  su 27 letti correttamente al primo colpo; i restanti 6 vengono
+  **segnalati automaticamente** (riga marcata "ATTENZIONE" nel log e
+  colonna NOTE nel file generato) quando la lettura risulta incompleta o
+  incoerente (es. più giorni di trasporto che di presenza, fisicamente
+  impossibile) — non vengono mai lasciati passare silenziosamente numeri
+  sbagliati.
+- **Comune di residenza** e **Buono servizio trasporto (SI/NO)**: **non**
+  vengono estratti automaticamente. La tabella densa "Allegato B" da cui
+  andrebbero letti si è rivelata inaffidabile con l'OCR (rischio concreto
+  di scambiare i dati tra una riga e l'altra, verificato in test). Restano
+  celle vuote evidenziate in **giallo** nel file generato (con menù a
+  tendina SI/NO per il buono): vanno compilate a mano guardando la pagina
+  "Allegato B" del PDF originale — pochi secondi a riga, molto più veloce
+  che trascrivere tutto manualmente.
+
+### Come usare
+
+1. Installa Tesseract OCR (vedi "Requisiti" sopra) e verifica con il
+   pulsante "Verifica Tesseract" nella scheda.
+2. **Aggiungi PDF...** → carica uno o più PDF scansionati.
+3. Premi **Converti PDF**. Per ogni PDF viene creato un file
+   `<nome file>_da_pdf.xlsx` con un foglio "All. \"A\"" (mese) e un foglio
+   "DSS1 - All. \"B\" e \"C\"" con una riga per utente.
+4. Apri il file generato: compila le celle gialle (Comune di residenza,
+   Buono trasporto) guardando il PDF, e controlla le righe segnalate in
+   colonna NOTE.
+5. Usa il file completato con l'Anonimizzatore e/o Rimborsi Comuni come
+   un qualsiasi altro file di rendicontazione.
+
+### Perché non è completamente automatico
+
+La conversione automatica al 100% della tabella densa "Allegato B" è
+stata provata e scartata: anche con il posizionamento delle singole
+parole (non solo il testo), l'OCR a volte sbaglia a riconoscere il numero
+di riga, facendo scivolare i dati di un utente su quelli di un altro —
+un errore silenzioso troppo rischioso per dei dati che finiscono in
+richieste di rimborso reali. Il compromesso scelto (automatico dove è
+affidabile, manuale dove non lo è, con segnalazione esplicita dei casi
+dubbi) privilegia la correttezza dei numeri sulla comodità.
 
 ## Note tecniche comuni
 
