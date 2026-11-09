@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -125,27 +124,47 @@ final class MonthlyReportParser {
             if (!normalized.equals("all. a")) {
                 continue;
             }
-            for (int r = 0; r <= Math.min(sheet.getLastRowNum(), 20); r++) {
-                Row row = sheet.getRow(r);
-                if (row == null) {
-                    continue;
-                }
+            // Puntiamo esplicitamente alla cella sotto l'etichetta "Riferimento fatture
+            // del mese/anno" (non una generica data con giorno=1 nel foglio: altre date,
+            // come quella di invio della fattura "Allegato alla fattura ... del", possono
+            // casualmente cadere anch'esse il giorno 1 e venire scambiate per il mese di
+            // competenza se intercettate prima).
+            for (Row row : sheet) {
                 for (Cell cell : row) {
-                    if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-                        Date date = cell.getDateCellValue();
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTime(date);
-                        // Riferimento fatture del mese/anno: e' sempre il 1' giorno del mese.
-                        if (cal.get(Calendar.DAY_OF_MONTH) == 1) {
-                            int year = cal.get(Calendar.YEAR);
-                            int month = cal.get(Calendar.MONTH);
-                            sortKeyHolder[0] = year * 100 + month;
-                            return MESI_ITALIANI[month] + " " + year;
+                    if (cell.getCellType() != CellType.STRING) {
+                        continue;
+                    }
+                    String testo = cell.getStringCellValue().toLowerCase(Locale.ITALIAN);
+                    if (testo.contains("riferimento") && testo.contains("mese") && testo.contains("anno")) {
+                        String label = readMeseFromCellsBelow(sheet, cell.getRowIndex(), cell.getColumnIndex(), sortKeyHolder);
+                        if (label != null) {
+                            return label;
                         }
                     }
                 }
             }
-            return null;
+            return null; // foglio "All. A" trovato ma etichetta/data di riferimento assente
+        }
+        return null;
+    }
+
+    private static String readMeseFromCellsBelow(Sheet sheet, int anchorRow, int anchorCol, int[] sortKeyHolder) {
+        // La data si trova quasi sempre nella cella subito sotto l'etichetta, stessa
+        // colonna; controlliamo anche un paio di righe piu' in basso per tolleranza.
+        for (int r = anchorRow + 1; r <= anchorRow + 3; r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) {
+                continue;
+            }
+            Cell cell = row.getCell(anchorCol);
+            if (cell != null && cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(cell.getDateCellValue());
+                int year = cal.get(Calendar.YEAR);
+                int month = cal.get(Calendar.MONTH);
+                sortKeyHolder[0] = year * 100 + month;
+                return MESI_ITALIANI[month] + " " + year;
+            }
         }
         return null;
     }
