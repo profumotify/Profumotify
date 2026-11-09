@@ -11,9 +11,26 @@ final class AllegatoAExtractor {
             "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
     };
 
+    // Ogni lettera del mese e' separata da \s* perche' a risoluzioni alte l'OCR a
+    // volte inserisce uno spazio spurio dentro la parola (es. "gen naio").
     private static final Pattern MESE_ANNO = Pattern.compile(
-            "(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)"
-                    + "\\s*/\\s*(\\d{4})", Pattern.CASE_INSENSITIVE);
+            "(" + fuzzyMonths() + ")\\s*/\\s*(\\d{4})", Pattern.CASE_INSENSITIVE);
+
+    private static String fuzzyMonths() {
+        StringBuilder sb = new StringBuilder();
+        for (String mese : MESI) {
+            if (sb.length() > 0) {
+                sb.append('|');
+            }
+            for (int i = 0; i < mese.length(); i++) {
+                sb.append(mese.charAt(i));
+                if (i < mese.length() - 1) {
+                    sb.append("\\s*");
+                }
+            }
+        }
+        return sb.toString();
+    }
 
     private AllegatoAExtractor() {
     }
@@ -34,7 +51,7 @@ final class AllegatoAExtractor {
         if (!m.find()) {
             return null;
         }
-        String meseNome = m.group(1).toLowerCase();
+        String meseNome = m.group(1).toLowerCase().replaceAll("\\s+", "");
         int anno = Integer.parseInt(m.group(2));
         int meseIdx = -1;
         for (int i = 0; i < MESI.length; i++) {

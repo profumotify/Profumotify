@@ -75,7 +75,12 @@ final class ModuloGExtractor {
         }
 
         e.completo = e.nominativo != null && e.dataNascita != null
-                && e.giorniPresenza != null && e.giorniTrasporto != null;
+                && e.giorniPresenza != null && e.giorniTrasporto != null
+                // Controllo di coerenza: non si puo' essere stati trasportati in piu'
+                // giorni di quanti si e' stati presenti. Se risulta il contrario e'
+                // quasi certamente un errore di lettura OCR su una cifra.
+                && e.giorniPresenza >= e.giorniTrasporto
+                && e.giorniPresenza <= 31 && e.giorniTrasporto <= 31;
         return e;
     }
 

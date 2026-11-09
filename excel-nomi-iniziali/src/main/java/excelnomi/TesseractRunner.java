@@ -40,7 +40,7 @@ final class TesseractRunner {
         try {
             File tmp = writeTempPng(image);
             try {
-                Process p = new ProcessBuilder("tesseract", tmp.getAbsolutePath(), "stdout", "--psm", "0")
+                Process p = new ProcessBuilder("tesseract", tmp.getAbsolutePath(), "stdout", "-l", "osd", "--psm", "0")
                         .redirectErrorStream(true).start();
                 String output = readAll(p.getInputStream());
                 p.waitFor();
