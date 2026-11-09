@@ -172,34 +172,40 @@ differenze rispetto al ricalcolo indipendente riga per riga.
 
 Converte un PDF **scansionato** di rendicontazione mensile (lo stesso
 modulo standard ASL BA, stampato, firmato/timbrato e poi scansionato) in
-un file Excel con la stessa struttura dei fogli "DSS... - All. B e C",
-pronto per essere completato e poi usato nelle altre due schede.
+un file Excel con la stessa struttura dei fogli "DSS... - All. B e C"
+(un foglio per ogni distretto trovato), pronto per essere completato e
+poi usato nelle altre due schede.
 
 ### Cosa legge in automatico, e cosa no
 
 Il PDF scansionato è un'immagine, non testo: serve l'OCR (riconoscimento
-ottico dei caratteri). Testato su un caso reale (34 pagine), l'affidabilità
-varia molto a seconda della pagina:
+ottico dei caratteri). I dati vengono letti direttamente dalle pagine
+"Allegato A" (mese di riferimento) e "Allegato B" (la tabella densa per
+distretto, una pagina per ogni DSS) — **non** dai moduli "G" (che in un
+PDF scansionato da moduli cartacei compilati a mano sono spesso
+illeggibili e comunque non sono richiesti). Testato su scansioni reali,
+l'affidabilità varia a seconda del campo:
 
-- **Mese di riferimento** (pagina "Allegato A"): lettura affidabile.
-- **Nominativo, data di nascita, giorni di presenza, giorni di trasporto**:
-  letti dalle pagine "Modulo G" (una per utente, autocertificazione
-  famiglia) — layout semplice con pochi campi isolati, molto più
-  affidabile della tabella fitta "Allegato B". Nel test reale: 21 utenti
-  su 27 letti correttamente al primo colpo; i restanti 6 vengono
-  **segnalati automaticamente** (riga marcata "ATTENZIONE" nel log e
-  colonna NOTE nel file generato) quando la lettura risulta incompleta o
-  incoerente (es. più giorni di trasporto che di presenza, fisicamente
-  impossibile) — non vengono mai lasciati passare silenziosamente numeri
-  sbagliati.
-- **Comune di residenza** e **Buono servizio trasporto (SI/NO)**: **non**
-  vengono estratti automaticamente. La tabella densa "Allegato B" da cui
-  andrebbero letti si è rivelata inaffidabile con l'OCR (rischio concreto
-  di scambiare i dati tra una riga e l'altra, verificato in test). Restano
-  celle vuote evidenziate in **giallo** nel file generato (con menù a
-  tendina SI/NO per il buono): vanno compilate a mano guardando la pagina
-  "Allegato B" del PDF originale — pochi secondi a riga, molto più veloce
-  che trascrivere tutto manualmente.
+- **Mese di riferimento, numero del distretto DSS, nominativo, comune di
+  residenza, data di nascita**: lettura ragionevolmente affidabile e
+  riempita in automatico, con qualche imperfezione occasionale (es. una
+  parola isolata di rumore OCR attaccata al nominativo) che si nota
+  facilmente confrontando con il PDF.
+- **Giorni di presenza, giorni di trasporto**: letti quando possibile, ma
+  **restano sempre evidenziati in giallo** anche quando il valore letto
+  sembra plausibile — nei test, letture apparentemente corrette per
+  questi due campi si sono rivelate talvolta sbagliate (cifre scambiate),
+  un rischio troppo alto per numeri che finiscono in richieste di
+  rimborso reali. Vanno quindi sempre confrontati con il PDF riga per
+  riga prima di fidarsene.
+- **Buono servizio trasporto (SI/NO)**: letto quando il testo OCR lo
+  rende come un token isolato riconoscibile; se non viene trovato, la
+  cella resta vuota ed evidenziata in giallo (con menù a tendina SI/NO)
+  da compilare a mano.
+- Ogni riga la cui lettura risulta incompleta o incoerente (es. più
+  giorni di trasporto che di presenza, fisicamente impossibile) viene
+  **segnalata automaticamente** in colonna NOTE e nel log ("ATTENZIONE") —
+  non viene mai lasciata passare silenziosamente come se fosse corretta.
 
 ### Come usare
 
@@ -208,23 +214,26 @@ varia molto a seconda della pagina:
 2. **Aggiungi PDF...** → carica uno o più PDF scansionati.
 3. Premi **Converti PDF**. Per ogni PDF viene creato un file
    `<nome file>_da_pdf.xlsx` con un foglio "All. \"A\"" (mese) e un foglio
-   "DSS1 - All. \"B\" e \"C\"" con una riga per utente.
-4. Apri il file generato: compila le celle gialle (Comune di residenza,
-   Buono trasporto) guardando il PDF, e controlla le righe segnalate in
-   colonna NOTE.
+   "DSS\<N\> - All. \"B\" e \"C\"" per ogni distretto trovato, con una riga
+   per utente.
+4. Apri il file generato: controlla **sempre** le celle evidenziate in
+   giallo (giorni di presenza/trasporto sempre; comune e buono solo se
+   mancanti) guardando la pagina "Allegato B" corrispondente del PDF
+   originale, e verifica le righe segnalate in colonna NOTE.
 5. Usa il file completato con l'Anonimizzatore e/o Rimborsi Comuni come
    un qualsiasi altro file di rendicontazione.
 
 ### Perché non è completamente automatico
 
-La conversione automatica al 100% della tabella densa "Allegato B" è
-stata provata e scartata: anche con il posizionamento delle singole
-parole (non solo il testo), l'OCR a volte sbaglia a riconoscere il numero
-di riga, facendo scivolare i dati di un utente su quelli di un altro —
-un errore silenzioso troppo rischioso per dei dati che finiscono in
-richieste di rimborso reali. Il compromesso scelto (automatico dove è
-affidabile, manuale dove non lo è, con segnalazione esplicita dei casi
-dubbi) privilegia la correttezza dei numeri sulla comodità.
+La tabella densa "Allegato B" è scritta a macchina ma molto compatta, e
+l'OCR a volte legge male un separatore di colonna o una cifra. Per i
+campi testuali (nominativo, comune, data) questo è quasi sempre
+recuperabile e visibile a colpo d'occhio se sbagliato; per le cifre
+(giorni di presenza/trasporto) un errore di lettura può invece passare
+inosservato se non segnalato — da qui la scelta di evidenziarle sempre
+in giallo, qualunque sia il risultato letto. Il compromesso (automatico
+dove l'errore si nota, sempre verificato a mano dove non si noterebbe)
+privilegia la correttezza dei numeri sulla comodità.
 
 ## Note tecniche comuni
 
