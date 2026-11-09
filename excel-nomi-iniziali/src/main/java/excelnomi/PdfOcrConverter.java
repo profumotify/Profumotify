@@ -20,22 +20,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
  * Converte un PDF di rendicontazione scansionato in un file Excel con la
- * stessa struttura dei fogli "DSS... - All. B e C" generati dal file
- * originale, cosi' da poter essere riletto direttamente da
- * {@link MonthlyReportParser} una volta completato a mano.
+ * stessa struttura (un foglio "DSS&lt;N&gt; - All. B e C" per distretto) dei
+ * fogli generati dal file originale, cosi' da poter essere riletto
+ * direttamente da {@link MonthlyReportParser} una volta completato a mano.
  * <p>
- * Dati letti in modo affidabile via OCR dalle pagine "Modulo G" (semplici,
- * un utente per pagina): nominativo, anno di nascita, giorni di
- * presenza/trasporto. Il mese di riferimento e' letto dalla pagina
- * "Allegato A". Comune di residenza e "Buono servizio trasporto" NON
- * vengono estratti automaticamente (la tabella densa "Allegato B" da cui
- * andrebbero letti si e' rivelata inaffidabile per l'OCR): restano celle
- * vuote evidenziate in giallo, da compilare guardando il PDF originale.
+ * I dati vengono letti dalle pagine "Allegato B" (tabella per distretto):
+ * nominativo, comune di residenza, data di nascita e buono trasporto
+ * SI/NO sono ragionevolmente affidabili e vengono riempiti in automatico;
+ * i giorni di presenza e di trasporto restano sempre evidenziati in
+ * giallo per una verifica rapida, perche' nei test anche letture che
+ * sembravano plausibili si sono rivelate talvolta sbagliate. Il mese di
+ * riferimento e' letto dalla pagina "Allegato A".
  */
 final class PdfOcrConverter {
 
@@ -43,18 +45,20 @@ final class PdfOcrConverter {
 
     static final class RigaEstratta {
         String nominativo;
+        String comune;
         String dataNascita;
         Integer giorniPresenza;
         Integer giorniTrasporto;
+        String buonoTrasporto;
         boolean completa;
     }
 
     static final class Risultato {
         String meseLabel;
         int pagineTotali;
-        int pagineModuloG;
-        List<RigaEstratta> righe = new ArrayList<>();
-        int righeIncomplete;
+        int pagineAllegatoB;
+        Map<Integer, List<RigaEstratta>> righePerDistretto = new LinkedHashMap<>();
+        int righeTotali;
     }
 
     static Risultato convert(Path pdfFile, Path outputXlsx, Consumer<String> logger)
@@ -66,6 +70,7 @@ final class PdfOcrConverter {
         }
 
         Risultato risultato = new Risultato();
+        int[] distrettoFallback = {0};
 
         PdfPageRenderer.forEachPage(pdfFile, (pageIndex, rawImage) -> {
             risultato.pagineTotali++;
@@ -82,25 +87,37 @@ final class PdfOcrConverter {
                 return;
             }
 
-            if (ModuloGExtractor.looksLikeModuloG(text)) {
-                risultato.pagineModuloG++;
-                ModuloGExtractor.Estratto e = ModuloGExtractor.parse(text);
-                RigaEstratta riga = new RigaEstratta();
-                riga.nominativo = e.nominativo;
-                riga.dataNascita = e.dataNascita;
-                riga.giorniPresenza = e.giorniPresenza;
-                riga.giorniTrasporto = e.giorniTrasporto;
-                riga.completa = e.completo;
-                if (!e.completo) {
-                    risultato.righeIncomplete++;
+            if (AllegatoBExtractor.looksLikeAllegatoB(text)) {
+                risultato.pagineAllegatoB++;
+                Integer dss = AllegatoBExtractor.extractDssNumber(text);
+                if (dss == null) {
+                    distrettoFallback[0]++;
+                    dss = 900 + distrettoFallback[0]; // numero fittizio se non si legge il distretto
                     logger.accept(String.format(
-                            "[ATTENZIONE] pagina %d: lettura incompleta (nominativo=%s, presenza=%s, trasporto=%s) - verificare a mano",
-                            pageIndex + 1, e.nominativo, e.giorniPresenza, e.giorniTrasporto));
-                } else {
-                    logger.accept(String.format("Pagina %d: %s - presenza=%d gg, trasporto=%d gg",
-                            pageIndex + 1, e.nominativo, e.giorniPresenza, e.giorniTrasporto));
+                            "[ATTENZIONE] pagina %d: non ho riconosciuto il numero del distretto DSS, assegnato un foglio provvisorio",
+                            pageIndex + 1));
                 }
-                risultato.righe.add(riga);
+                List<AllegatoBExtractor.Riga> righe = AllegatoBExtractor.parseRows(text);
+                logger.accept(String.format("Pagina %d: Distretto DSS n.%d - %d utenti trovati", pageIndex + 1, dss, righe.size()));
+
+                List<RigaEstratta> lista = risultato.righePerDistretto.computeIfAbsent(dss, k -> new ArrayList<>());
+                for (AllegatoBExtractor.Riga r : righe) {
+                    RigaEstratta riga = new RigaEstratta();
+                    riga.nominativo = r.nominativo;
+                    riga.comune = r.comune;
+                    riga.dataNascita = r.dataNascita;
+                    riga.giorniPresenza = r.giorniPresenza;
+                    riga.giorniTrasporto = r.giorniTrasporto;
+                    riga.buonoTrasporto = r.buonoTrasporto;
+                    riga.completa = r.completa;
+                    lista.add(riga);
+                    risultato.righeTotali++;
+                    if (!r.completa) {
+                        logger.accept(String.format(
+                                "  [ATTENZIONE] %s: lettura parziale (presenza=%s, trasporto=%s, buono=%s) - verificare a mano",
+                                r.nominativo, r.giorniPresenza, r.giorniTrasporto, r.buonoTrasporto));
+                    }
+                }
             }
         });
 
@@ -116,7 +133,9 @@ final class PdfOcrConverter {
     private static void writeWorkbook(Risultato risultato, Path outputXlsx) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {
             writeAllegatoASheet(workbook, risultato.meseLabel);
-            writeDssSheet(workbook, risultato.righe);
+            for (Map.Entry<Integer, List<RigaEstratta>> entry : risultato.righePerDistretto.entrySet()) {
+                writeDssSheet(workbook, entry.getKey(), entry.getValue());
+            }
 
             Path parent = outputXlsx.getParent();
             if (parent != null) {
@@ -175,23 +194,26 @@ final class PdfOcrConverter {
         }
     }
 
-    private static void writeDssSheet(Workbook workbook, List<RigaEstratta> righe) {
-        Sheet sheet = workbook.createSheet("DSS1 - All. \"B\" e \"C\"");
+    private static void writeDssSheet(Workbook workbook, int dssNumber, List<RigaEstratta> righe) {
+        String sheetName = "DSS" + dssNumber + " - All. \"B\" e \"C\"";
+        if (sheetName.length() > 31) {
+            sheetName = sheetName.substring(0, 31);
+        }
+        Sheet sheet = workbook.createSheet(sheetName);
         CellStyle headerStyle = boldStyle(workbook);
         CellStyle highlightStyle = highlightStyle(workbook);
-        CellStyle dateStyle = workbook.createCellStyle();
-        dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd/mm/yyyy"));
 
         Row header = sheet.createRow(5); // riga 6: stessa posizione del modulo originale
         setHeader(header, 0, "n.", headerStyle);
         setHeader(header, 1, "Cognome e Nome", headerStyle);
-        setHeader(header, 4, "Comune di residenza (DA COMPILARE - vedi PDF)", headerStyle);
+        setHeader(header, 4, "Comune di residenza", headerStyle);
         setHeader(header, 6, "Data di nascita", headerStyle);
-        setHeader(header, 13, "Gg. Presenza (da OCR)", headerStyle);
+        setHeader(header, 13, "Gg. Presenza (da OCR - VERIFICARE)", headerStyle);
         setHeader(header, 14, "Rimborso Frequenza (non disponibile da OCR)", headerStyle);
-        setHeader(header, 16, "Gg. Trasporto (da OCR)", headerStyle);
-        setHeader(header, 17, "Buono trasporto SI/NO (DA COMPILARE - vedi PDF)", headerStyle);
-        setHeader(header, 18, "Rimborso Trasporto (calcolato dopo aver compilato il Buono)", headerStyle);
+        setHeader(header, 16, "Gg. Trasporto (da OCR - VERIFICARE)", headerStyle);
+        setHeader(header, 17, "Buono trasporto SI/NO", headerStyle);
+        setHeader(header, 18, "Rimborso Trasporto (calcolato automaticamente)", headerStyle);
+        setHeader(header, 19, "NOTE", headerStyle);
 
         int rowIdx = 8; // riga 9: prima riga dati, come nel modulo originale
         int n = 1;
@@ -202,28 +224,41 @@ final class PdfOcrConverter {
             row.createCell(1).setCellValue(riga.nominativo != null ? riga.nominativo : "");
 
             Cell comuneCell = row.createCell(4);
-            comuneCell.setCellValue("");
-            comuneCell.setCellStyle(highlightStyle);
+            comuneCell.setCellValue(riga.comune != null ? riga.comune : "");
+            if (riga.comune == null) {
+                comuneCell.setCellStyle(highlightStyle);
+            }
 
             if (riga.dataNascita != null) {
                 row.createCell(6).setCellValue(riga.dataNascita);
             }
+
+            // I giorni (presenza/trasporto) restano SEMPRE evidenziati: anche quando
+            // sembrano plausibili, nei test si sono rivelati a volte sbagliati.
+            Cell presenzaCell = row.createCell(13);
             if (riga.giorniPresenza != null) {
-                row.createCell(13).setCellValue(riga.giorniPresenza);
+                presenzaCell.setCellValue(riga.giorniPresenza);
             }
+            presenzaCell.setCellStyle(highlightStyle);
+
             row.createCell(14).setCellValue(0);
+
+            Cell trasportoCell = row.createCell(16);
             if (riga.giorniTrasporto != null) {
-                row.createCell(16).setCellValue(riga.giorniTrasporto);
+                trasportoCell.setCellValue(riga.giorniTrasporto);
             }
+            trasportoCell.setCellStyle(highlightStyle);
 
             Cell buonoCell = row.createCell(17);
-            buonoCell.setCellValue("");
-            buonoCell.setCellStyle(highlightStyle);
+            buonoCell.setCellValue(riga.buonoTrasporto != null ? riga.buonoTrasporto : "");
+            if (riga.buonoTrasporto == null) {
+                buonoCell.setCellStyle(highlightStyle);
+            }
 
             row.createCell(18).setCellValue(0);
 
             if (!riga.completa) {
-                row.createCell(19).setCellValue("ATTENZIONE: lettura OCR incompleta, verificare tutta la riga");
+                row.createCell(19).setCellValue("Verificare: lettura OCR parziale o incoerente su questa riga");
             }
             rowIdx++;
         }

@@ -26,11 +26,12 @@ import java.util.List;
 
 /**
  * Pannello che converte un PDF di rendicontazione scansionato in un file
- * Excel con la stessa struttura dei fogli "DSS... - All. B e C", usando
- * l'OCR (Tesseract, da installare a parte) sulle pagine "Modulo G" e
- * "Allegato A". Comune di residenza e Buono trasporto restano da
- * compilare a mano (evidenziati in giallo nel file generato): la tabella
- * densa da cui andrebbero letti si e' rivelata inaffidabile con l'OCR.
+ * Excel con la stessa struttura dei fogli "DSS&lt;N&gt; - All. B e C" (un
+ * foglio per distretto), usando l'OCR (Tesseract, da installare a parte)
+ * sulle pagine "Allegato B" (tabella per distretto) e "Allegato A" (mese
+ * di riferimento). Nominativo, comune, data di nascita e buono trasporto
+ * vengono riempiti in automatico; i giorni di presenza/trasporto restano
+ * sempre evidenziati in giallo per una verifica rapida.
  */
 final class PdfOcrPanel extends JPanel {
 
@@ -56,13 +57,14 @@ final class PdfOcrPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout(4, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         JLabel intro = new JLabel("<html>Converte un PDF <b>scansionato</b> di rendicontazione mensile in un file "
-                + "Excel compatibile con la scheda \"Rimborsi Comuni\". Legge in modo affidabile, tramite OCR, "
-                + "le pagine \"Modulo G\" (nominativo, data di nascita, giorni presenza/trasporto) e la pagina "
-                + "\"Allegato A\" (mese di riferimento).<br>"
-                + "<b>Comune di residenza</b> e <b>Buono trasporto SI/NO</b> restano celle vuote evidenziate in "
-                + "giallo nel file generato: vanno compilate a mano guardando la pagina \"Allegato B\" del PDF "
-                + "(la lettura automatica di quella tabella densa si e' rivelata inaffidabile). Una volta "
-                + "completato, il file e' pronto per l'Anonimizzatore/Rimborsi Comuni.</html>");
+                + "Excel compatibile con l'Anonimizzatore/Rimborsi Comuni, con un foglio per ogni distretto DSS "
+                + "trovato. Legge tramite OCR la pagina \"Allegato A\" (mese di riferimento) e le pagine "
+                + "\"Allegato B\" (tabella per distretto): nominativo, comune di residenza, data di nascita e "
+                + "buono trasporto SI/NO vengono riempiti in automatico.<br>"
+                + "<b>I giorni di presenza/trasporto restano sempre evidenziati in giallo</b>, anche quando "
+                + "sembrano corretti: in fase di test, numeri letti male sono a volte passati senza essere "
+                + "segnalati come errore - vanno quindi sempre controllati guardando il PDF prima di fidarsene. "
+                + "Una volta verificato, il file e' pronto per l'Anonimizzatore/Rimborsi Comuni.</html>");
         panel.add(intro, BorderLayout.CENTER);
         panel.add(tesseractStatusLabel, BorderLayout.SOUTH);
         return panel;
@@ -212,11 +214,19 @@ final class PdfOcrPanel extends JPanel {
                 try {
                     Path outputPath = buildOutputPath(file, destinationDir);
                     PdfOcrConverter.Risultato r = PdfOcrConverter.convert(file.toPath(), outputPath, this::publish);
+                    int righeIncomplete = 0;
+                    for (java.util.List<PdfOcrConverter.RigaEstratta> lista : r.righePerDistretto.values()) {
+                        for (PdfOcrConverter.RigaEstratta riga : lista) {
+                            if (!riga.completa) {
+                                righeIncomplete++;
+                            }
+                        }
+                    }
                     publish(String.format(
-                            "%s -> %s  (mese: %s, pagine totali: %d, utenti letti: %d, da verificare: %d)",
+                            "%s -> %s  (mese: %s, pagine totali: %d, distretti: %d, utenti letti: %d, da verificare: %d)",
                             file.getName(), outputPath.getFileName(), r.meseLabel, r.pagineTotali,
-                            r.pagineModuloG, r.righeIncomplete));
-                    publish("Ricorda di compilare Comune di residenza e Buono trasporto (celle gialle) prima di usare il file.");
+                            r.righePerDistretto.size(), r.righeTotali, righeIncomplete));
+                    publish("Ricorda di controllare le celle evidenziate in giallo (giorni presenza/trasporto sempre, comune/buono solo se mancanti) prima di usare il file.");
                     successCount++;
                 } catch (Exception ex) {
                     publish("[ERRORE] " + file.getName() + ": " + ex.getMessage());
