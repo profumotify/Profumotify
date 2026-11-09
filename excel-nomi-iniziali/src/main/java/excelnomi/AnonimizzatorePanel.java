@@ -3,6 +3,7 @@ package excelnomi;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -37,6 +38,9 @@ final class AnonimizzatorePanel extends JPanel {
     private final JTextField keywordsField = new JTextField(String.join(", ", ExcelProcessor.DEFAULT_HEADER_KEYWORDS));
     private final JTextField anchorsField = new JTextField(String.join(", ", FreeTextNameRedactor.DEFAULT_ANCHOR_PHRASES));
     private final JTextField destinationField = new JTextField();
+    private final JCheckBox mappingCheckbox = new JCheckBox(
+            "Genera anche un file di corrispondenza Nome↔Iniziali (CSV, RISERVATO: tienilo solo sul tuo PC, "
+                    + "mai insieme ai file anonimizzati che condividi)");
     private final JTextArea logArea = new JTextArea();
     private final JProgressBar progressBar = new JProgressBar();
     private final JButton processButton = new JButton("Elabora file");
@@ -118,7 +122,11 @@ final class AnonimizzatorePanel extends JPanel {
         destinationPanel.add(new JLabel("Cartella di destinazione (opzionale):"), BorderLayout.NORTH);
         destinationPanel.add(destinationField, BorderLayout.CENTER);
         destinationPanel.add(chooseDestButton, BorderLayout.EAST);
-        panel.add(destinationPanel, BorderLayout.NORTH);
+
+        JPanel northPanel = new JPanel(new GridLayout(2, 1, 4, 4));
+        northPanel.add(destinationPanel);
+        northPanel.add(mappingCheckbox);
+        panel.add(northPanel, BorderLayout.NORTH);
 
         logArea.setEditable(false);
         logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
@@ -200,13 +208,14 @@ final class AnonimizzatorePanel extends JPanel {
             files.add(fileListModel.get(i));
         }
         String destinationDir = destinationField.getText().trim();
+        boolean generateMapping = mappingCheckbox.isSelected();
 
         processButton.setEnabled(false);
         logArea.setText("");
         progressBar.setValue(0);
         progressBar.setMaximum(files.size());
 
-        new ProcessingWorker(files, keywords, anchors, destinationDir).execute();
+        new ProcessingWorker(files, keywords, anchors, destinationDir, generateMapping).execute();
     }
 
     private final class ProcessingWorker extends SwingWorker<Void, String> {
@@ -214,13 +223,17 @@ final class AnonimizzatorePanel extends JPanel {
         private final List<String> keywords;
         private final List<String> anchors;
         private final String destinationDir;
+        private final boolean generateMapping;
+        private final List<NameMapping> allMappings = new ArrayList<>();
         private int successCount = 0;
 
-        ProcessingWorker(List<File> files, List<String> keywords, List<String> anchors, String destinationDir) {
+        ProcessingWorker(List<File> files, List<String> keywords, List<String> anchors, String destinationDir,
+                          boolean generateMapping) {
             this.files = files;
             this.keywords = keywords;
             this.anchors = anchors;
             this.destinationDir = destinationDir;
+            this.generateMapping = generateMapping;
         }
 
         @Override
@@ -241,12 +254,30 @@ final class AnonimizzatorePanel extends JPanel {
                                 result.inputFileName, result.outputFile.getFileName(), result.columnsFound,
                                 result.namesTransformed, result.freeTextNamesTransformed));
                     }
+                    if (generateMapping) {
+                        allMappings.addAll(result.mappings);
+                    }
                     successCount++;
                 } catch (Exception ex) {
                     publish("[ERRORE] " + file.getName() + ": " + ex.getMessage());
                 }
                 done++;
                 publishProgressValue(done);
+            }
+
+            if (generateMapping && !allMappings.isEmpty()) {
+                try {
+                    Path mappingPath = buildMappingOutputPath(files.get(0), destinationDir);
+                    NameMappingWriter.write(allMappings, mappingPath);
+                    List<NameMappingWriter.Row> aggregated = NameMappingWriter.aggregate(allMappings);
+                    long collisioni = aggregated.stream().filter(r -> r.collisione).count();
+                    publish(String.format(
+                            "\nFile di corrispondenza (RISERVATO, non condividere) -> %s  (%d coppie uniche%s)",
+                            mappingPath.getFileName(), aggregated.size(),
+                            collisioni > 0 ? ", di cui " + collisioni + " con iniziali ambigue/condivise" : ""));
+                } catch (Exception ex) {
+                    publish("[ERRORE] scrittura file di corrispondenza: " + ex.getMessage());
+                }
             }
             return null;
         }
@@ -280,5 +311,12 @@ final class AnonimizzatorePanel extends JPanel {
                 ? new File(destinationDir)
                 : inputFile.getParentFile();
         return new File(targetDir, outputName).toPath();
+    }
+
+    private static Path buildMappingOutputPath(File firstInputFile, String destinationDir) {
+        File targetDir = (destinationDir != null && !destinationDir.isEmpty())
+                ? new File(destinationDir)
+                : firstInputFile.getParentFile();
+        return new File(targetDir, "corrispondenza_nomi_RISERVATO.csv").toPath();
     }
 }

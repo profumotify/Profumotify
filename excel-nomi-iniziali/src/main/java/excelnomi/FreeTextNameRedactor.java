@@ -59,7 +59,7 @@ final class FreeTextNameRedactor {
     private FreeTextNameRedactor() {
     }
 
-    static int process(Sheet sheet, List<String> anchorPhrases) {
+    static List<NameMapping> process(Sheet sheet, List<String> anchorPhrases) {
         List<String> sortedAnchors = new ArrayList<>();
         for (String phrase : anchorPhrases) {
             String normalized = phrase.trim().toLowerCase(Locale.ITALIAN);
@@ -71,7 +71,7 @@ final class FreeTextNameRedactor {
         // altrimenti quella piu' corta, che ne e' un prefisso, la intercetterebbe prima.
         sortedAnchors.sort(Comparator.comparingInt(String::length).reversed());
 
-        int transformed = 0;
+        List<NameMapping> mappings = new ArrayList<>();
         for (Row row : sheet) {
             for (Cell cell : row) {
                 if (cell.getCellType() != CellType.STRING) {
@@ -96,18 +96,21 @@ final class FreeTextNameRedactor {
                         int end = afterAnchor + matcher.end(1);
                         String newText = text.substring(0, start) + initials + text.substring(end);
                         cell.setCellValue(newText);
-                        transformed++;
-                    } else if (transformInFirstCellToTheRight(row, cell.getColumnIndex())) {
-                        transformed++;
+                        mappings.add(new NameMapping(namePart.trim(), initials));
+                    } else {
+                        NameMapping mapping = transformInFirstCellToTheRight(row, cell.getColumnIndex());
+                        if (mapping != null) {
+                            mappings.add(mapping);
+                        }
                     }
                     break; // una sola ancora per cella
                 }
             }
         }
-        return transformed;
+        return mappings;
     }
 
-    private static boolean transformInFirstCellToTheRight(Row row, int anchorColumn) {
+    private static NameMapping transformInFirstCellToTheRight(Row row, int anchorColumn) {
         int limit = Math.min(anchorColumn + 1 + MAX_COLUMNS_TO_SCAN_RIGHT, row.getLastCellNum());
         for (int col = anchorColumn + 1; col < limit; col++) {
             Cell candidate = row.getCell(col);
@@ -119,12 +122,13 @@ final class FreeTextNameRedactor {
             if (candidate.getCellType() == CellType.STRING) {
                 String value = candidate.getStringCellValue().trim();
                 if (STRICT_FULL_NAME.matcher(value).matches()) {
-                    candidate.setCellValue(NameInitialsConverter.toInitials(value));
-                    return true;
+                    String initials = NameInitialsConverter.toInitials(value);
+                    candidate.setCellValue(initials);
+                    return new NameMapping(value, initials);
                 }
             }
-            return false;
+            return null;
         }
-        return false;
+        return null;
     }
 }

@@ -66,6 +66,22 @@ L'app è inoltre **idempotente**: si può rilanciare in sicurezza su un file
 già anonimizzato in precedenza, senza ulteriormente troncare le iniziali
 già presenti.
 
+### File di corrispondenza Nome↔Iniziali (opzionale)
+
+Spuntando la casella "Genera anche un file di corrispondenza
+Nome↔Iniziali", oltre ai file anonimizzati viene creato anche
+`corrispondenza_nomi_RISERVATO.csv`, con una riga per ogni nominativo
+originale distinto incontrato: nome per esteso, iniziali corrispondenti,
+quante volte è comparso, e se quelle iniziali sono condivise anche da un
+altro nominativo diverso (colonna "Collisione" — in quel caso le iniziali
+da sole non bastano a risalire con certezza alla persona giusta).
+
+**Questo file vanifica l'anonimizzazione se distribuito insieme ai file
+`_iniziali`**: va tenuto solo sul tuo PC, per uso interno (es. per
+riportare un elenco in iniziali al nominativo reale quando serve), mai
+caricato online o inviato a terzi insieme ai file anonimizzati. Per
+questo la casella è disattivata di default.
+
 ## Scheda 2 — Rimborsi Comuni
 
 A partire dai file di rendicontazione mensile (fogli standard ASL

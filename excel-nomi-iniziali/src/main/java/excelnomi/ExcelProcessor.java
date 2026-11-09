@@ -50,14 +50,16 @@ final class ExcelProcessor {
         final int columnsFound;
         final int namesTransformed;
         final int freeTextNamesTransformed;
+        final List<NameMapping> mappings;
 
         Result(String inputFileName, Path outputFile, int columnsFound, int namesTransformed,
-               int freeTextNamesTransformed) {
+               int freeTextNamesTransformed, List<NameMapping> mappings) {
             this.inputFileName = inputFileName;
             this.outputFile = outputFile;
             this.columnsFound = columnsFound;
             this.namesTransformed = namesTransformed;
             this.freeTextNamesTransformed = freeTextNamesTransformed;
+            this.mappings = mappings;
         }
     }
 
@@ -74,6 +76,7 @@ final class ExcelProcessor {
         int columnsFound = 0;
         int namesTransformed = 0;
         int freeTextNamesTransformed = 0;
+        List<NameMapping> mappings = new ArrayList<>();
 
         try (InputStream in = Files.newInputStream(inputFile);
              Workbook workbook = WorkbookFactory.create(in)) {
@@ -131,7 +134,9 @@ final class ExcelProcessor {
                         if (type == CellType.FORMULA) {
                             cell.setCellFormula(null);
                         }
-                        cell.setCellValue(NameInitialsConverter.toInitials(value));
+                        String initials = NameInitialsConverter.toInitials(value);
+                        cell.setCellValue(initials);
+                        mappings.add(new NameMapping(value.trim(), initials));
                         namesTransformed++;
                     }
                 }
@@ -140,7 +145,9 @@ final class ExcelProcessor {
                 // testo libero (es. moduli di dichiarazione/dimissione) riconosciuti
                 // da una frase-ancora ("Il sottoscritto", "sig.ra", "dell'utente", ...).
                 // Eseguito su ogni foglio, anche quelli senza colonne "Cognome e Nome".
-                freeTextNamesTransformed += FreeTextNameRedactor.process(sheet, freeTextAnchorPhrases);
+                List<NameMapping> freeTextMappings = FreeTextNameRedactor.process(sheet, freeTextAnchorPhrases);
+                mappings.addAll(freeTextMappings);
+                freeTextNamesTransformed += freeTextMappings.size();
             }
 
             // Alcuni fogli hanno colonne "specchio" con formule tipo =IF(X9=0,"",X9):
@@ -158,7 +165,7 @@ final class ExcelProcessor {
         }
 
         return new Result(inputFile.getFileName().toString(), outputFile, columnsFound, namesTransformed,
-                freeTextNamesTransformed);
+                freeTextNamesTransformed, mappings);
     }
 
     private static String normalize(String value) {
