@@ -30,7 +30,7 @@ final class AllegatoBExtractor {
     // prima della data di nascita, qualunque sia (o non sia) il separatore
     // davanti ad essa, e tutto il resto prima di quella parola e' il nominativo.
     private static final Pattern ROW_START = Pattern.compile(
-            "([A-ZÀ-Ý][A-ZÀ-Ý'.\\s]{2,45}?)\\s*[|\\]]?\\s*([A-ZÀ-Ý.]{3,20})\\s*[|\\]]?\\s*(\\d{1,2}/\\d{1,2}/\\d{4})",
+            "([A-ZÀ-Ý][A-ZÀ-Ý'.\\s]{2,45}?)\\s*[|\\]_]*\\s*([A-ZÀ-Ý.]{3,20})\\s*[|\\]_]*\\s*(\\d{1,2}/\\d{1,2}/\\d{4})",
             Pattern.CASE_INSENSITIVE);
 
     // "SI" viene talvolta letto dall'OCR come "sì"/"SÌ" (accento, non solo
