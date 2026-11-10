@@ -57,17 +57,27 @@ final class MonthlyReportParser {
         final String meseLabel;
         final int meseSortKey;
         final List<GuestMonthRecord> records;
+        final List<String> warnings;
 
         ParsedMonth(String meseLabel, int meseSortKey, List<GuestMonthRecord> records) {
+            this(meseLabel, meseSortKey, records, new ArrayList<>());
+        }
+
+        ParsedMonth(String meseLabel, int meseSortKey, List<GuestMonthRecord> records, List<String> warnings) {
             this.meseLabel = meseLabel;
             this.meseSortKey = meseSortKey;
             this.records = records;
+            this.warnings = warnings;
         }
     }
 
     static ParsedMonth parse(Path file) throws IOException {
         try (InputStream in = Files.newInputStream(file);
              Workbook workbook = WorkbookFactory.create(in)) {
+
+            if (TransportModuleParser.looksLikeTransportModule(workbook)) {
+                return TransportModuleParser.parse(workbook, file);
+            }
 
             int[] sortKeyHolder = new int[1];
             String meseLabel = readMeseLabel(workbook, sortKeyHolder);
@@ -118,10 +128,12 @@ final class MonthlyReportParser {
         }
     }
 
-    private static String readMeseLabel(Workbook workbook, int[] sortKeyHolder) {
+    // Richiamato anche da TransportModuleParser (foglio "Riepilogo Fattura", stessa
+    // etichetta "Riferimento fattura del mese/anno" del modulo "All. A").
+    static String readMeseLabel(Workbook workbook, int[] sortKeyHolder) {
         for (Sheet sheet : workbook) {
             String normalized = sheet.getSheetName().toLowerCase(Locale.ITALIAN).replace("\"", "").trim();
-            if (!normalized.equals("all. a")) {
+            if (!normalized.equals("all. a") && !normalized.equals("riepilogo fattura")) {
                 continue;
             }
             // Puntiamo esplicitamente alla cella sotto l'etichetta "Riferimento fatture
@@ -174,11 +186,11 @@ final class MonthlyReportParser {
         return dot >= 0 ? fileName.substring(0, dot) : fileName;
     }
 
-    private static boolean isBlank(String s) {
+    static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
 
-    private static String stringValue(Row row, int col) {
+    static String stringValue(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) {
             return null;
@@ -200,7 +212,7 @@ final class MonthlyReportParser {
         return null;
     }
 
-    private static double numericValue(Row row, int col) {
+    static double numericValue(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) {
             return 0;
@@ -215,7 +227,7 @@ final class MonthlyReportParser {
         return 0;
     }
 
-    private static Integer extractAnnoNascita(Row row, int col) {
+    static Integer extractAnnoNascita(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) {
             return null;

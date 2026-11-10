@@ -54,11 +54,18 @@ final class RimborsiComuniPanel extends JPanel {
     private JPanel buildTopPanel() {
         JPanel panel = new JPanel(new BorderLayout(4, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-        JLabel intro = new JLabel("<html>Carica i file di rendicontazione mensile (fogli \"DSS... - All. B e C\") "
-                + "di uno o piu' mesi. Per ogni utente viene letto il comune di residenza, i giorni/importo di "
-                + "frequenza e i giorni/importo pieno di trasporto; del trasporto il "
-                + "<b>40% resta a carico ASL</b> e il <b>60% viene calcolato come quota a carico del comune</b> "
-                + "di residenza, da richiedere a rimborso.<br>"
+        JLabel intro = new JLabel("<html>Carica i file di rendicontazione mensile, nel modulo standard "
+                + "(fogli \"DSS... - All. B e C\") o nel modulo alternativo \"Mod_Ut_TRASPORTI\" (foglio "
+                + "\"Anagrafica\"): i due formati vengono riconosciuti automaticamente e possono essere "
+                + "caricati insieme nella stessa elaborazione. Per ogni utente viene letto il comune di "
+                + "residenza, i giorni/importo di frequenza (se presenti) e i giorni/importo pieno di "
+                + "trasporto; del trasporto il <b>40% resta a carico ASL</b> e il <b>60% viene calcolato come "
+                + "quota a carico del comune</b> di residenza, da richiedere a rimborso (nel modulo "
+                + "\"Mod_Ut_TRASPORTI\" il trasporto e' sempre fatturato a tariffa piena, senza la distinzione "
+                + "del Buono servizio trasporto).<br>"
+                + "Per i file nel formato \"Mod_Ut_TRASPORTI\" i totali per comune calcolati vengono anche "
+                + "confrontati automaticamente con quelli gia' presenti nel foglio \"Divis. x DSS-Comune\" del "
+                + "file stesso, segnalando eventuali discrepanze nel log.<br>"
                 + "Per ogni file caricato viene generato un riepilogo per comune (con un foglio di dettaglio "
                 + "utenti per ciascun comune, gia' con nomi in iniziali se hai usato prima l'Anonimizzatore), "
                 + "piu' un riepilogo complessivo sull'intero periodo caricato.</html>");
@@ -204,6 +211,9 @@ final class RimborsiComuniPanel extends JPanel {
                         publish(String.format("%s (%s) -> %s  (%d utenti, %d comuni)",
                                 file.getName(), parsed.meseLabel, outputPath.getFileName(),
                                 parsed.records.size(), countComuni(parsed.records)));
+                        for (String warning : parsed.warnings) {
+                            publish("  " + warning);
+                        }
                         parsedMonths.add(parsed);
                         successCount++;
                     }

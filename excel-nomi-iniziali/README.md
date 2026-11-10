@@ -94,9 +94,35 @@ questo la casella è disattivata di default.
 
 ## Scheda 2 — Rimborsi Comuni
 
-A partire dai file di rendicontazione mensile (fogli standard ASL
-"DSS... - All. B e C"), calcola per ogni **comune di residenza** degli
-utenti quanto richiedere a rimborso per il trasporto.
+A partire dai file di rendicontazione mensile, calcola per ogni **comune
+di residenza** degli utenti quanto richiedere a rimborso per il
+trasporto.
+
+### Due formati di rendicontazione, riconosciuti automaticamente
+
+Alcune strutture rendicontano con il modulo standard ASL BA (fogli
+"DSS... - All. B e C"), altre con il modulo alternativo
+"Mod_Ut_TRASPORTI" (un foglio "Anagrafica" con una riga per utente). Il
+programma riconosce automaticamente quale dei due formati ha ogni file
+caricato (cercando il foglio "Anagrafica"), e li può elaborare **insieme
+nella stessa sessione**: puoi caricare file di entrambi i tipi e
+ottenere comunque un unico riepilogo per comune.
+
+La differenza principale tra i due moduli: nel modulo standard il
+trasporto può essere scontato dal "Buono servizio trasporto" (vedi sotto
+la logica di calcolo); nel modulo "Mod_Ut_TRASPORTI" il trasporto viene
+invece sempre fatturato per intero a 14,50 €/giorno, senza questa
+distinzione — il calcolo lo riconosce automaticamente e applica lo sconto
+solo quando il modulo standard lo prevede.
+
+Per i file "Mod_Ut_TRASPORTI" viene inoltre fatta una **verifica
+incrociata automatica**: i totali per comune calcolati da questo
+programma vengono confrontati con quelli già presenti nel foglio
+"Divis. x DSS-Comune" dello stesso file (che il modulo calcola già da
+solo); eventuali differenze (giorni di trasporto, importo fatturato o
+quota Comune) vengono segnalate nel log con il prefisso "[VERIFICA]",
+così un'eventuale riga letta male nell'Anagrafica emerge subito invece
+di passare inosservata.
 
 ### Logica di calcolo
 
